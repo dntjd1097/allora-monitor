@@ -1,0 +1,73 @@
+# 기본 설정
+{
+    # 전역 설정
+    admin off
+    log {
+        format json
+    }
+}
+
+# 프론트엔드 서비스 설정 (localhost 또는 도메인 이름으로 변경 가능)
+allora-inference.kro.kr {
+    # 기본 설정
+    encode gzip
+
+    # 프론트엔드 서비스로 리버스 프록시
+    handle / {
+        reverse_proxy frontend:3000
+    }
+
+    # 백엔드 API 서비스로 리버스 프록시
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy backend:8080
+    }
+
+    # 헬스 체크 엔드포인트
+    handle /health {
+        respond "OK" 200
+    }
+
+    # 로깅 설정
+    log {
+        output file /data/access.log {
+            roll_size 10MB
+            roll_keep 10
+        }
+    }
+}
+
+# HTTPS 설정 (도메인이 있는 경우 아래 주석 해제 및 수정)
+# example.com {
+#     # TLS 자동 설정
+#     tls {
+#         protocols tls1.2 tls1.3
+#     }
+#
+#     # 기본 설정
+#     encode gzip
+#
+#     # 프론트엔드 서비스로 리버스 프록시
+#     handle / {
+#         reverse_proxy frontend:3000
+#     }
+#
+#     # 백엔드 API 서비스로 리버스 프록시
+#     handle /api/* {
+#         uri strip_prefix /api
+#         reverse_proxy backend:8080
+#     }
+#
+#     # 헬스 체크 엔드포인트
+#     handle /health {
+#         respond "OK" 200
+#     }
+#
+#     # 로깅 설정
+#     log {
+#         output file /data/access.log {
+#             roll_size 10MB
+#             roll_keep 10
+#         }
+#     }
+# } 

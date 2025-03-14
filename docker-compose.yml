@@ -6,8 +6,6 @@ services:
             context: ./backend
             dockerfile: Dockerfile
         container_name: allora-monitor-backend
-        ports:
-            - '9000:8080'
         volumes:
             - ./backend/data:/app/data
         restart: unless-stopped
@@ -19,12 +17,27 @@ services:
             context: ./temp-next-app
             dockerfile: Dockerfile
         container_name: allora-monitor-frontend
-        ports:
-            - '9001:3000'
         depends_on:
             - backend
         environment:
-            - NEXT_PUBLIC_API_URL=http://backend:8080
+            - NEXT_PUBLIC_API_URL=/api
+        restart: unless-stopped
+        networks:
+            - allora-web-network
+
+    caddy:
+        image: caddy:2-alpine
+        container_name: allora-monitor-caddy
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+            - caddy_config:/config
+        depends_on:
+            - frontend
+            - backend
         restart: unless-stopped
         networks:
             - allora-web-network
@@ -32,3 +45,7 @@ services:
 networks:
     allora-web-network:
         driver: bridge
+
+volumes:
+    caddy_data:
+    caddy_config:
