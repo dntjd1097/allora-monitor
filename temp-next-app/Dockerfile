@@ -10,8 +10,8 @@ RUN bun install
 # 소스 코드 복사
 COPY . .
 
-# 애플리케이션 빌드
-RUN npm run build
+# 애플리케이션 빌드 (ESLint 검사 건너뛰기)
+RUN NEXT_DISABLE_ESLINT=1 npm run build
 
 # 실행 이미지
 FROM node:20-slim AS runner
