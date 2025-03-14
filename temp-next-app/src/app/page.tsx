@@ -317,7 +317,9 @@ export default function HomePage() {
             <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2">
                     <span>{parts[0]}%</span>
-                    <span className="text-gray-400">~</span>
+                    <span className="text-[var(--muted-foreground)]">
+                        ~
+                    </span>
                     <span>{parts[1]}%</span>
                 </div>
             </div>
@@ -331,7 +333,7 @@ export default function HomePage() {
             return 'text-green-600 font-bold';
         if (rankNum <= 30) return 'text-blue-600';
         if (rankNum <= 50) return 'text-orange-600';
-        return 'text-gray-600';
+        return 'text-[var(--foreground)]';
     };
 
     // Helper function to get color based on score
@@ -486,7 +488,7 @@ export default function HomePage() {
                             </span>
                         </div>
                         {item.leaderboard.first_name && (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-[var(--muted-foreground)]">
                                 {
                                     item.leaderboard
                                         .first_name
@@ -649,7 +651,7 @@ export default function HomePage() {
             <div className="border border-gray-300 rounded-lg overflow-hidden shadow-lg bg-white">
                 <div className="grid grid-cols-1 md:grid-cols-4 border-b border-gray-300">
                     <div className="col-span-1 border-r border-gray-300 p-5 bg-gray-50">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+                        <h2 className="text-xl font-semibold mb-4 text-[var(--foreground)]">
                             Competition
                         </h2>
                         <div className="flex flex-wrap gap-2">
@@ -694,7 +696,7 @@ export default function HomePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-gray-600 mb-2">
+                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                                 Topic ID
                                             </h3>
                                             <p className="text-2xl font-bold text-center text-purple-600">
@@ -707,7 +709,7 @@ export default function HomePage() {
 
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-gray-600 mb-2">
+                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                                 Start Date
                                             </h3>
                                             <p className="text-sm text-center font-medium">
@@ -721,7 +723,7 @@ export default function HomePage() {
 
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-gray-600 mb-2">
+                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                                 End Date
                                             </h3>
                                             <p className="text-sm text-center font-medium">
@@ -748,13 +750,13 @@ export default function HomePage() {
                         </div>
                     ) : inferenceData ? (
                         <div>
-                            <h2 className="text-xl font-semibold mb-4 text-indigo-700 border-b pb-2 border-gray-200">
+                            <h2 className="text-xl font-semibold mb-4 text-[var(--foreground)] border-b pb-2 border-gray-200">
                                 Metrics
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                                 <div className="border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 bg-white">
                                     <div>
-                                        <h3 className="text-center font-medium text-gray-600 mb-2">
+                                        <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                             Combined Value
                                         </h3>
                                         <p className="text-2xl font-bold text-center text-blue-600">
@@ -770,7 +772,7 @@ export default function HomePage() {
 
                                 <div className="border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 bg-white">
                                     <div>
-                                        <h3 className="text-center font-medium text-gray-600 mb-2">
+                                        <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                             Naive Value
                                         </h3>
                                         <p className="text-2xl font-bold text-center text-green-600">
@@ -786,7 +788,7 @@ export default function HomePage() {
 
                                 <div className="border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 bg-white">
                                     <div>
-                                        <h3 className="text-center font-medium text-gray-600 mb-2">
+                                        <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                             Inference Block
                                             Height
                                         </h3>
@@ -802,7 +804,7 @@ export default function HomePage() {
 
                                 <div className="border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 bg-white">
                                     <div>
-                                        <h3 className="text-center font-medium text-gray-600 mb-2">
+                                        <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
                                             Loss Block
                                             Height
                                         </h3>
@@ -822,7 +824,7 @@ export default function HomePage() {
                                 <div className="mb-8">
                                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
                                         <div className="flex items-center space-x-2 mb-3 md:mb-0">
-                                            <span className="text-sm font-medium text-gray-700">
+                                            <span className="text-sm font-medium text-[var(--foreground)]">
                                                 Current
                                                 Block
                                                 Height:
@@ -838,7 +840,7 @@ export default function HomePage() {
                                                 <div className="flex items-center space-x-2">
                                                     <label
                                                         htmlFor="height-select"
-                                                        className="text-sm font-medium text-gray-700"
+                                                        className="text-sm font-medium text-[var(--foreground)]"
                                                     >
                                                         Select
                                                         Height:
@@ -906,7 +908,7 @@ export default function HomePage() {
                                                     )}
                                                 </div>
                                                 {heightsLoading && (
-                                                    <span className="text-xs text-gray-500">
+                                                    <span className="text-xs text-[var(--muted-foreground)]">
                                                         Loading
                                                         heights...
                                                     </span>
@@ -947,7 +949,7 @@ export default function HomePage() {
                                                     className={`px-3 py-1 rounded text-sm font-medium flex items-center ${
                                                         pagination.prev_height
                                                             ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                            : 'bg-gray-100 text-[var(--muted-foreground)] cursor-not-allowed'
                                                     }`}
                                                 >
                                                     <svg
@@ -1002,7 +1004,7 @@ export default function HomePage() {
                                                     className={`px-3 py-1 rounded text-sm font-medium flex items-center ${
                                                         pagination.next_height
                                                             ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                            : 'bg-gray-100 text-[var(--muted-foreground)] cursor-not-allowed'
                                                     }`}
                                                 >
                                                     Next
@@ -1031,12 +1033,12 @@ export default function HomePage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                                 <div>
-                                    <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700 border-b pb-2 border-gray-200">
+                                    <h2 className="text-xl font-semibold mb-4 flex items-center text-[var(--foreground)] border-b pb-2 border-gray-200">
                                         <span className="mr-2">
                                             Confidence
                                             Intervals
                                         </span>
-                                        <span className="text-sm text-gray-500 font-normal">
+                                        <span className="text-sm text-[var(--muted-foreground)] font-normal">
                                             (Percentiles and
                                             their values)
                                         </span>
@@ -1045,10 +1047,10 @@ export default function HomePage() {
                                         <table className="w-full border-collapse">
                                             <thead>
                                                 <tr className="bg-gray-100">
-                                                    <th className="border border-gray-300 p-2 text-left font-semibold text-gray-700">
+                                                    <th className="border border-gray-300 p-2 text-left font-semibold text-[var(--foreground)]">
                                                         Percentile
                                                     </th>
-                                                    <th className="border border-gray-300 p-2 text-left font-semibold text-gray-700">
+                                                    <th className="border border-gray-300 p-2 text-left font-semibold text-[var(--foreground)]">
                                                         Value
                                                     </th>
                                                 </tr>
@@ -1098,19 +1100,19 @@ export default function HomePage() {
                                 </div>
 
                                 <div>
-                                    <h2 className="text-xl font-semibold mb-4 text-indigo-700 flex items-center border-b pb-2 border-gray-200">
+                                    <h2 className="text-xl font-semibold mb-4 text-[var(--foreground)] flex items-center border-b pb-2 border-gray-200">
                                         <span className="mr-2">
                                             Additional
                                             Information
                                         </span>
-                                        <span className="text-sm text-gray-500 font-normal">
+                                        <span className="text-sm text-[var(--muted-foreground)] font-normal">
                                             (Metadata)
                                         </span>
                                     </h2>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                             <div>
-                                                <h3 className="font-medium mb-2 text-gray-600">
+                                                <h3 className="font-medium mb-2 text-[var(--foreground)]">
                                                     Timestamp
                                                 </h3>
                                                 <p className="text-sm bg-gray-50 p-3 rounded font-mono">
@@ -1121,7 +1123,7 @@ export default function HomePage() {
                                                         'PPpp'
                                                     )}
                                                 </p>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-[var(--muted-foreground)] mt-1">
                                                     (UTC:{' '}
                                                     {new Date(
                                                         inferenceData.data.timestamp
@@ -1142,12 +1144,12 @@ export default function HomePage() {
                                     .synthesis_value
                                     .length > 0 && (
                                     <>
-                                        <h2 className="text-xl font-semibold mb-4 flex items-center text-indigo-700 border-b pb-2 border-gray-200">
+                                        <h2 className="text-xl font-semibold mb-4 flex items-center text-[var(--foreground)] border-b pb-2 border-gray-200">
                                             <span className="mr-2">
                                                 Synthesis
                                                 Values
                                             </span>
-                                            <span className="text-sm text-gray-500 font-normal">
+                                            <span className="text-sm text-[var(--muted-foreground)] font-normal">
                                                 (
                                                 {
                                                     inferenceData
@@ -1160,7 +1162,7 @@ export default function HomePage() {
                                             </span>
                                         </h2>
                                         <div className="mb-2 flex justify-between items-center">
-                                            <span className="inline-flex items-center text-sm text-gray-500">
+                                            <span className="inline-flex items-center text-sm text-[var(--muted-foreground)]">
                                                 <svg
                                                     className="w-4 h-4 mr-1"
                                                     fill="none"
@@ -1224,7 +1226,7 @@ export default function HomePage() {
                                                 {showColumnMenu && (
                                                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                                                         <div className="p-3">
-                                                            <h3 className="text-sm font-medium text-gray-700 mb-2">
+                                                            <h3 className="text-sm font-medium text-[var(--foreground)] mb-2">
                                                                 Select
                                                                 columns
                                                                 to
@@ -1272,7 +1274,7 @@ export default function HomePage() {
                                                                             />
                                                                             <label
                                                                                 htmlFor={`column-${column.id}`}
-                                                                                className="ml-2 text-sm text-gray-700"
+                                                                                className="ml-2 text-sm text-[var(--foreground)]"
                                                                             >
                                                                                 {
                                                                                     column.label
@@ -1306,7 +1308,7 @@ export default function HomePage() {
                                                                         key={
                                                                             column.id
                                                                         }
-                                                                        className="border border-gray-300 p-2 text-left cursor-move hover:bg-gray-200 font-semibold text-gray-700"
+                                                                        className="border border-gray-300 p-2 text-left cursor-move hover:bg-gray-200 font-semibold text-[var(--foreground)]"
                                                                         onClick={() =>
                                                                             handleSort(
                                                                                 column.id
@@ -1349,7 +1351,7 @@ export default function HomePage() {
                                                                             <div className="flex items-center">
                                                                                 <span className="mr-1">
                                                                                     <svg
-                                                                                        className="w-4 h-4 text-gray-400"
+                                                                                        className="w-4 h-4 text-[var(--muted-foreground)]"
                                                                                         fill="none"
                                                                                         stroke="currentColor"
                                                                                         viewBox="0 0 24 24"
@@ -1430,7 +1432,7 @@ export default function HomePage() {
                                 )}
                         </div>
                     ) : (
-                        <div className="text-center text-gray-500 p-8 bg-gray-50 rounded-lg">
+                        <div className="text-center text-[var(--muted-foreground)] p-8 bg-gray-50 rounded-lg">
                             <div className="text-4xl mb-2">
                                 📊
                             </div>
