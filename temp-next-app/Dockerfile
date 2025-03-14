@@ -1,4 +1,4 @@
-FROM imbios/bun-node:18-slim AS deps
+FROM imbios/bun-node:18-slim AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
@@ -16,7 +16,6 @@ RUN npm run build
 # 실행 이미지
 FROM node:20-slim AS runner
 
-
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -31,4 +30,4 @@ COPY --from=builder /app/.next/static ./.next/static
 EXPOSE 3000
 
 # 실행
-CMD ["npm", "start"] 
+CMD ["node", "server.js"] 
