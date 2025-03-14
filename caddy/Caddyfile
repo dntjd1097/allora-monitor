@@ -1,44 +1,7 @@
-# 기본 설정
-{
-    # 전역 설정
-    admin off
-    log {
-        format json
-    }
 
-}
-
-# 프론트엔드 서비스 설정 (도메인 설정)
 allora-inference.kro.kr {
-    # TLS 설정 비활성화 (HTTP만 사용)
-
-
-    # 기본 설정
-    encode gzip
-
-    # 프론트엔드 서비스로 리버스 프록시
-    handle / {
-        reverse_proxy frontend:3000
-    }
-
-    # 백엔드 API 서비스로 리버스 프록시
-    handle /api/* {
-        uri strip_prefix /api
-        reverse_proxy backend:8080
-    }
-
-    # 헬스 체크 엔드포인트
-    handle /health {
-        respond "OK" 200
-    }
-
-    # 로깅 설정
-    log {
-        output file /data/access.log {
-            roll_size 10MB
-            roll_keep 10
-        }
-    }
+    reverse_proxy frontend:3000
 }
-
-
+backend.allora-inference.kro.kr {
+    reverse_proxy backend:8080
+}
