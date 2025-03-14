@@ -6,12 +6,6 @@ export const metadata: Metadata = {
     description: 'Monitoring dashboard for Allora Network',
 };
 
-// 모바일 환경에서 텍스트 가독성 향상을 위한 스타일
-const textStyle = {
-    color: '#000000',
-    fontWeight: 600,
-};
-
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -21,7 +15,7 @@ export default function RootLayout({
 
     return (
         <html lang="en">
-            <body className="bg-gray-50" style={textStyle}>
+            <body className="bg-gray-50">
                 <div className="flex flex-col min-h-screen">
                     <Header />
                     <main className="flex-1 container mx-auto px-4 py-6">
@@ -53,10 +47,7 @@ function Header() {
 function Footer({ year }: { year: number }) {
     return (
         <footer className="bg-gray-100 border-t border-gray-200 py-4 mt-8">
-            <div
-                className="container mx-auto px-4 text-center text-[var(--foreground)]"
-                style={textStyle}
-            >
+            <div className="container mx-auto px-4 text-center text-[var(--foreground)]">
                 <p>
                     © {year} Allora Monitor. All rights
                     reserved.
