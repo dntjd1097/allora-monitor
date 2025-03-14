@@ -14,7 +14,8 @@ COPY . .
 RUN npm run build
 
 # 실행 이미지
-FROM node:20-alpine
+FROM node:20-slim AS runner
+
 
 WORKDIR /app
 
