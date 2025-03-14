@@ -1,10 +1,11 @@
-FROM node:20-alpine AS builder
+FROM imbios/bun-node:18-slim AS deps
+ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
-# 의존성 설치
-COPY package.json bun.lockb ./
-RUN npm install
+# 종속성 파일 복사
+COPY package.json  ./
+RUN bun install 
 
 # 소스 코드 복사
 COPY . .
@@ -17,14 +18,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 빌드된 파일과 필요한 파일 복사
-COPY --from=builder /app/.next ./.next
+ENV NODE_ENV=production
+# ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 # 환경 변수 설정
-ENV NODE_ENV=production
 
 # 포트 노출
 EXPOSE 3000
