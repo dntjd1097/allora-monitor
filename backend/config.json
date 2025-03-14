@@ -1,0 +1,10 @@
+{
+    "port": "8080",
+    "data_dir": "data",
+    "allora_base_url": "https://forge.allora.network",
+    "api_timeout_seconds": 30,
+    "monitoring_interval_minutes": 60,
+    "data_retention_days": 30,
+    "topic_update_interval_minutes": 5,
+    "default_active_topics": []
+}

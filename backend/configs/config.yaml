@@ -1,0 +1,19 @@
+# Allora Monitor 설정 파일
+
+server:
+    port: 8080
+
+# 데이터 저장 설정
+data_dir: 'data'
+
+# API 설정
+allora_base_url: 'https://forge.allora.network'
+api_timeout_seconds: 30
+
+# 모니터링 설정
+monitoring_interval_minutes: 60 # 1시간마다 데이터 수집
+data_retention_days: 90 # 90일 동안 데이터 보존
+
+# 토픽 추론 데이터 설정
+topic_update_interval_minutes: 5
+default_active_topics: []
