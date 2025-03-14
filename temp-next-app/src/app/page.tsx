@@ -42,7 +42,7 @@ type SynthesisValueItem = {
     one_out_inferer_values: string;
     weight: string;
     confidential_percentiles?: string;
-    leaderboard: {
+    leaderboard?: {
         rank: string;
         username: string;
         first_name?: string;
@@ -334,7 +334,12 @@ export default function HomePage() {
 
     // Helper function to get color based on rank
     const getRankColor = (rank: string) => {
+        if (!rank) return 'text-[var(--foreground)]';
+
         const rankNum = parseInt(rank);
+        if (isNaN(rankNum))
+            return 'text-[var(--foreground)]';
+
         if (rankNum <= 10)
             return 'text-green-600 font-bold';
         if (rankNum <= 30) return 'text-blue-600';
@@ -384,14 +389,20 @@ export default function HomePage() {
 
             switch (sortField) {
                 case 'rank':
-                    aValue = parseInt(a.leaderboard.rank);
-                    bValue = parseInt(b.leaderboard.rank);
+                    aValue = a.leaderboard
+                        ? parseInt(a.leaderboard.rank)
+                        : Number.MAX_SAFE_INTEGER;
+                    bValue = b.leaderboard
+                        ? parseInt(b.leaderboard.rank)
+                        : Number.MAX_SAFE_INTEGER;
                     break;
                 case 'username':
-                    aValue =
-                        a.leaderboard.username.toLowerCase();
-                    bValue =
-                        b.leaderboard.username.toLowerCase();
+                    aValue = a.leaderboard
+                        ? a.leaderboard.username.toLowerCase()
+                        : 'zzz';
+                    bValue = b.leaderboard
+                        ? b.leaderboard.username.toLowerCase()
+                        : 'zzz';
                     break;
                 case 'address':
                     aValue = a.worker.toLowerCase();
@@ -414,16 +425,28 @@ export default function HomePage() {
                     );
                     break;
                 case 'loss':
-                    aValue = a.leaderboard.loss;
-                    bValue = b.leaderboard.loss;
+                    aValue = a.leaderboard
+                        ? a.leaderboard.loss
+                        : Number.MAX_SAFE_INTEGER;
+                    bValue = b.leaderboard
+                        ? b.leaderboard.loss
+                        : Number.MAX_SAFE_INTEGER;
                     break;
                 case 'score':
-                    aValue = a.leaderboard.score;
-                    bValue = b.leaderboard.score;
+                    aValue = a.leaderboard
+                        ? a.leaderboard.score
+                        : Number.MIN_SAFE_INTEGER;
+                    bValue = b.leaderboard
+                        ? b.leaderboard.score
+                        : Number.MIN_SAFE_INTEGER;
                     break;
                 case 'points':
-                    aValue = a.leaderboard.points;
-                    bValue = b.leaderboard.points;
+                    aValue = a.leaderboard
+                        ? a.leaderboard.points
+                        : 0;
+                    bValue = b.leaderboard
+                        ? b.leaderboard.points
+                        : 0;
                     break;
                 case 'confidential_percentiles':
                     aValue =
@@ -467,7 +490,7 @@ export default function HomePage() {
     ) => {
         switch (columnId) {
             case 'rank':
-                return (
+                return item.leaderboard ? (
                     <span
                         className={getRankColor(
                             item.leaderboard.rank
@@ -475,9 +498,11 @@ export default function HomePage() {
                     >
                         {item.leaderboard.rank}
                     </span>
+                ) : (
+                    <span>N/A</span>
                 );
             case 'username':
-                return (
+                return item.leaderboard ? (
                     <div>
                         <div className="flex items-center">
                             {item.leaderboard.is_active ? (
@@ -503,6 +528,17 @@ export default function HomePage() {
                             </div>
                         )}
                     </div>
+                ) : (
+                    <div>
+                        <div className="flex items-center">
+                            <span className="mr-1 text-gray-500">
+                                ●
+                            </span>
+                            <span className="font-medium">
+                                Unknown
+                            </span>
+                        </div>
+                    </div>
                 );
             case 'address':
                 return (
@@ -524,9 +560,11 @@ export default function HomePage() {
                     item.one_out_inferer_values
                 );
             case 'loss':
-                return item.leaderboard.loss.toFixed(5);
+                return item.leaderboard
+                    ? item.leaderboard.loss.toFixed(5)
+                    : 'N/A';
             case 'score':
-                return (
+                return item.leaderboard ? (
                     <span
                         className={getScoreColor(
                             item.leaderboard.score
@@ -534,9 +572,13 @@ export default function HomePage() {
                     >
                         {item.leaderboard.score.toFixed(5)}
                     </span>
+                ) : (
+                    <span>N/A</span>
                 );
             case 'points':
-                return item.leaderboard.points.toFixed(2);
+                return item.leaderboard
+                    ? item.leaderboard.points.toFixed(2)
+                    : 'N/A';
             case 'confidential_percentiles':
                 return formatPercentiles(
                     item.confidential_percentiles
