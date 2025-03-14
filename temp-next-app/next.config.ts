@@ -12,6 +12,20 @@ const nextConfig: NextConfig = {
         // 빌드 시 ESLint 검사를 건너뜁니다.
         ignoreDuringBuilds: true,
     },
+    // HTML에 환경 변수 스크립트 추가
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'no-store, must-revalidate',
+                    },
+                ],
+            },
+        ];
+    },
 };
 
 export default nextConfig;
