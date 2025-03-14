@@ -133,6 +133,78 @@ docker compose up -d
 
 ## 배포
 
+### Production Deployment
+
+For production deployment, we use a separate Docker Compose configuration and deployment scripts that handle external volume creation and management.
+
+#### Using the Deployment Scripts
+
+1. For Linux/macOS:
+
+    ```bash
+    # Make the script executable
+    chmod +x deploy-production.sh
+
+    # Run the deployment script
+    ./deploy-production.sh
+    ```
+
+2. For Windows:
+    ```cmd
+    # Run the deployment script
+    deploy-production.bat
+    ```
+
+These scripts will:
+
+-   Create the external Docker volume if it doesn't exist
+-   Set proper permissions on the volume
+-   Pull the latest changes from git (if in a git repository)
+-   Build and start the containers using the production configuration
+-   Verify that all containers are running
+
+#### Manual Production Deployment
+
+If you prefer to deploy manually:
+
+1. Create the external volume:
+
+    ```bash
+    docker volume create allora_monitor_data
+    ```
+
+2. Set proper permissions on the volume:
+
+    ```bash
+    docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
+    ```
+
+3. Deploy using the production Docker Compose file:
+    ```bash
+    docker-compose -f docker-compose.prod.yml up -d --build
+    ```
+
+### Troubleshooting Production Deployment
+
+If you encounter the "readonly database" error in production:
+
+1. Check the volume permissions:
+
+    ```bash
+    docker run --rm -v allora_monitor_data:/data alpine sh -c "ls -la /data"
+    ```
+
+2. Fix permissions if needed:
+
+    ```bash
+    docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
+    ```
+
+3. Restart the backend container:
+    ```bash
+    docker-compose -f docker-compose.prod.yml restart backend
+    ```
+
 ### GitHub Actions를 사용한 자동 배포
 
 이 프로젝트는 GitHub Actions를 사용하여 자동으로 배포됩니다. `main` 브랜치에 변경 사항이 푸시되면 자동으로 배포 워크플로우가 실행됩니다.

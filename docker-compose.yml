@@ -46,7 +46,5 @@ networks:
 
 volumes:
     allora_monitor_data:
-        external: true
-
         # Using a named volume for data persistence
         # This will persist even if containers are removed
