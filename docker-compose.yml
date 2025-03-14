@@ -29,8 +29,8 @@ services:
         image: nginx:alpine
         container_name: allora-monitor-nginx
         ports:
-            - '80:80'
-            - '443:443'
+            - '280:280'
+            - '2443:2443'
         volumes:
             - ./nginx/conf:/etc/nginx/conf.d
         depends_on:
