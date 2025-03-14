@@ -26,33 +26,8 @@ jobs:
               run: |
                   mkdir -p $(pwd)/backend/data
                   chmod 777 $(pwd)/backend/data
-                  mkdir -p $(pwd)/nginx/certbot/conf
-                  mkdir -p $(pwd)/nginx/certbot/www
-                  mkdir -p $(pwd)/nginx/dhparam
+                  mkdir -p $(pwd)/nginx/conf
                   chmod -R 777 $(pwd)/nginx
-
-            - name: Check if dhparam.pem exists
-              id: check_dhparam
-              run: |
-                  if [ ! -f "$(pwd)/nginx/dhparam/dhparam.pem" ]; then
-                      echo "::set-output name=exists::false"
-                  else
-                      echo "::set-output name=exists::true"
-                  fi
-
-            - name: Generate DH parameters if not exists
-              if: steps.check_dhparam.outputs.exists == 'false'
-              run: |
-                  sudo openssl dhparam -out $(pwd)/nginx/dhparam/dhparam.pem 2048
-
-            - name: Download SSL configuration files if not exists
-              run: |
-                  if [ ! -f "$(pwd)/nginx/certbot/conf/options-ssl-nginx.conf" ]; then
-                      curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > $(pwd)/nginx/certbot/conf/options-ssl-nginx.conf
-                  fi
-                  if [ ! -f "$(pwd)/nginx/certbot/conf/ssl-dhparams.pem" ]; then
-                      curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > $(pwd)/nginx/certbot/conf/ssl-dhparams.pem
-                  fi
 
             - name: Build and deploy with Docker Compose
               run: |

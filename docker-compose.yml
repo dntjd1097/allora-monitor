@@ -33,33 +33,13 @@ services:
             - '2443:443'
         volumes:
             - ./nginx/conf:/etc/nginx/conf.d
-            - ./nginx/certbot/conf:/etc/letsencrypt
-            - ./nginx/certbot/www:/var/www/certbot
-            - ./nginx/dhparam:/etc/ssl/certs
         depends_on:
             - frontend
             - backend
         restart: unless-stopped
         networks:
             - allora-web-network
-        command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
-
-    certbot:
-        image: certbot/certbot
-        container_name: allora-monitor-certbot
-        volumes:
-            - ./nginx/certbot/conf:/etc/letsencrypt
-            - ./nginx/certbot/www:/var/www/certbot
-        depends_on:
-            - nginx
-        entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-        networks:
-            - allora-web-network
 
 networks:
     allora-web-network:
         driver: bridge
-
-volumes:
-    caddy_data:
-    caddy_config:
