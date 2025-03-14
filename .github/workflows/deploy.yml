@@ -13,6 +13,16 @@ jobs:
     deploy:
         runs-on: self-hosted
         steps:
+            - name: Clean workspace before checkout
+              run: |
+                  # 강제로 모든 파일 및 디렉토리 삭제
+                  if [ -d "$GITHUB_WORKSPACE" ]; then
+                    sudo find $GITHUB_WORKSPACE -type d -name "renewal-hooks" -exec chmod -R 777 {} \; || true
+                    sudo find $GITHUB_WORKSPACE -type d -name "certbot" -exec chmod -R 777 {} \; || true
+                    sudo rm -rf $GITHUB_WORKSPACE/* || true
+                    sudo rm -rf $GITHUB_WORKSPACE/.* || true
+                  fi
+
             - name: Checkout code
               uses: actions/checkout@v4
 
@@ -24,10 +34,10 @@ jobs:
 
             - name: Setting up directories
               run: |
-                  mkdir -p $(pwd)/backend/data
-                  chmod 777 $(pwd)/backend/data
-                  mkdir -p $(pwd)/nginx/conf
-                  chmod -R 777 $(pwd)/nginx
+                  sudo mkdir -p $(pwd)/backend/data
+                  sudo chmod 777 $(pwd)/backend/data
+                  sudo mkdir -p $(pwd)/nginx/conf
+                  sudo chmod -R 777 $(pwd)/nginx
 
             - name: Build and deploy with Docker Compose
               run: |
@@ -41,8 +51,8 @@ jobs:
             - name: Show logs
               run: |
                   echo "Backend logs:"
-                  sudo docker logs allora-monitor-backend --tail 20
+                  sudo docker logs allora-monitor-backend --tail 20 || true
                   echo "Frontend logs:"
-                  sudo docker logs allora-monitor-frontend --tail 20
+                  sudo docker logs allora-monitor-frontend --tail 20 || true
                   echo "Nginx logs:"
-                  sudo docker logs allora-monitor-nginx --tail 20
+                  sudo docker logs allora-monitor-nginx --tail 20 || true
