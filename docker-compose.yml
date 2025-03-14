@@ -7,7 +7,7 @@ services:
             dockerfile: Dockerfile
         container_name: allora-monitor-backend
         volumes:
-            - ./backend/data:/app/data
+            - allora_monitor_data:/app/data
         restart: unless-stopped
         networks:
             - allora-web-network
@@ -43,3 +43,10 @@ services:
 networks:
     allora-web-network:
         driver: bridge
+
+volumes:
+    allora_monitor_data:
+        external: true
+
+        # Using a named volume for data persistence
+        # This will persist even if containers are removed

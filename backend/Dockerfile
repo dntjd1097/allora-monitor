@@ -22,8 +22,9 @@ COPY --from=builder /app/allora-monitor .
 COPY --from=builder /app/config.json .
 COPY --from=builder /app/configs ./configs
 
-# 필요한 디렉토리 생성
-RUN mkdir -p /app/data
+# 필요한 디렉토리 생성 및 권한 설정
+RUN mkdir -p /app/data && \
+    chmod 777 /app/data
 
 # 포트 노출
 EXPOSE 8080

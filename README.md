@@ -15,6 +15,96 @@ allora-monitor/
 └── docker-compose.yml   # Docker Compose 설정 파일
 ```
 
+## Docker Compose Setup with External Data Volume
+
+This project uses Docker Compose to run the backend, frontend, and nginx services. The backend service uses a named volume for data persistence.
+
+### Prerequisites
+
+-   Docker
+-   Docker Compose
+
+### Running the Application
+
+1. Clone the repository:
+
+    ```bash
+    git clone <repository-url>
+    cd allora-monitor
+    ```
+
+2. Start the services:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+3. Stop the services:
+    ```bash
+    docker-compose down
+    ```
+
+### Data Persistence
+
+The application uses a named volume `allora_monitor_data` for database persistence. This volume is managed by Docker and persists even if the containers are removed.
+
+-   The data is stored in the volume `allora_monitor_data`
+-   The volume is mounted to `/app/data` in the backend container
+
+### Backing Up Data
+
+To back up the data, you can use Docker's volume commands:
+
+```bash
+# Create a backup
+docker run --rm -v allora_monitor_data:/data -v $(pwd):/backup alpine tar -czf /backup/allora_monitor_data_backup.tar.gz /data
+
+# Restore from backup
+docker run --rm -v allora_monitor_data:/data -v $(pwd):/backup alpine sh -c "cd /data && tar -xzf /backup/allora_monitor_data_backup.tar.gz --strip 1"
+```
+
+### Troubleshooting
+
+If you encounter a "readonly database" error, it might be due to permission issues. Try the following:
+
+1. Check the permissions in the container:
+
+    ```bash
+    docker exec -it allora-monitor-backend sh -c "ls -la /app/data"
+    ```
+
+2. If needed, fix permissions:
+
+    ```bash
+    docker exec -it allora-monitor-backend sh -c "chmod -R 777 /app/data"
+    ```
+
+3. Restart the container:
+    ```bash
+    docker-compose restart backend
+    ```
+
+## Development
+
+For local development without Docker:
+
+1. Set up the backend:
+
+    ```bash
+    cd backend
+    go mod download
+    go run cmd/app/main.go
+    ```
+
+2. Set up the frontend:
+    ```bash
+    cd temp-next-app
+    npm install
+    npm run dev
+    ```
+
+Note: When developing locally, the data will be stored in the `backend/data` directory, which is ignored by git.
+
 ## 로컬 개발 환경 설정
 
 ### 필수 요구 사항
