@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: allora-monitor-backend
+        ports:
+            - '9000:8080'
+        volumes:
+            - ./backend/data:/app/data
+        restart: unless-stopped
+        networks:
+            - allora-web-network
+
+    frontend:
+        build:
+            context: ./temp-next-app
+            dockerfile: Dockerfile
+        container_name: allora-monitor-frontend
+        ports:
+            - '9001:3000'
+        depends_on:
+            - backend
+        environment:
+            - NEXT_PUBLIC_API_URL=http://backend:9000
+        restart: unless-stopped
+        networks:
+            - allora-web-network
+
+networks:
+    allora-web-network:
+        driver: bridge
