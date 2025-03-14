@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 
 # 애플리케이션 빌드
-RUN go build -o allora-monitor ./cmd/main.go
+RUN go build -o allora-monitor ./cmd/app/main.go
 
 # 실행 이미지
 FROM alpine:latest
