@@ -2,7 +2,7 @@
 
 :root {
     --background: #ffffff;
-    --foreground: #171717;
+    --foreground: #000000;
     --primary: #3b82f6;
     --primary-foreground: #ffffff;
     --secondary: #f3f4f6;
@@ -12,7 +12,7 @@
     --muted: #f3f4f6;
     --muted-foreground: #000000;
     --card: #ffffff;
-    --card-foreground: #171717;
+    --card-foreground: #000000;
     --border: #e5e7eb;
     --input: #e5e7eb;
     --ring: #3b82f6;
@@ -28,7 +28,7 @@
 @media (prefers-color-scheme: dark) {
     :root {
         --background: #0a0a0a;
-        --foreground: #ededed;
+        --foreground: #ffffff;
         --primary: #3b82f6;
         --primary-foreground: #ffffff;
         --secondary: #1f2937;
@@ -36,12 +36,40 @@
         --accent: #4f46e5;
         --accent-foreground: #ffffff;
         --muted: #1f2937;
-        --muted-foreground: #d1d5db;
+        --muted-foreground: #ffffff;
         --card: #171717;
-        --card-foreground: #ededed;
+        --card-foreground: #ffffff;
         --border: #374151;
         --input: #374151;
         --ring: #3b82f6;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        color: #000000 !important;
+    }
+
+    .text-[var(--muted-foreground)] {
+        color: #000000 !important;
+    }
+
+    .text-[var(--foreground)] {
+        color: #000000 !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        body {
+            color: #ffffff !important;
+        }
+
+        .text-[var(--muted-foreground)] {
+            color: #ffffff !important;
+        }
+
+        .text-[var(--foreground)] {
+            color: #ffffff !important;
+        }
     }
 }
 
@@ -49,6 +77,7 @@ body {
     background: var(--background);
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
+    font-weight: 500;
 }
 
 .card {
@@ -87,4 +116,19 @@ body {
 
 .btn-secondary:hover {
     opacity: 0.9;
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        font-weight: 600;
+    }
+
+    .text-xs,
+    .text-sm {
+        font-size: 1rem !important;
+    }
+
+    table {
+        font-size: 1rem !important;
+    }
 }

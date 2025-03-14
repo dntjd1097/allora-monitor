@@ -196,6 +196,12 @@ export default function HomePage() {
     const [showAllHeights, setShowAllHeights] =
         useState<boolean>(false);
 
+    // 모바일 환경에서 텍스트 가독성 향상을 위한 스타일
+    const textStyle = {
+        color: '#000000',
+        fontWeight: 600,
+    };
+
     useEffect(() => {
         const fetchCompetitions = async () => {
             try {
@@ -647,11 +653,17 @@ export default function HomePage() {
     }
 
     return (
-        <div className="bg-gradient-to-b from-gray-50 to-gray-100">
+        <div
+            className="bg-gradient-to-b from-gray-50 to-gray-100"
+            style={textStyle}
+        >
             <div className="border border-gray-300 rounded-lg overflow-hidden shadow-lg bg-white">
                 <div className="grid grid-cols-1 md:grid-cols-4 border-b border-gray-300">
                     <div className="col-span-1 border-r border-gray-300 p-5 bg-gray-50">
-                        <h2 className="text-xl font-semibold mb-4 text-[var(--foreground)]">
+                        <h2
+                            className="text-xl font-semibold mb-4 text-[var(--foreground)]"
+                            style={textStyle}
+                        >
                             Competition
                         </h2>
                         <div className="flex flex-wrap gap-2">
@@ -687,7 +699,10 @@ export default function HomePage() {
                     <div className="col-span-3 p-4 bg-white">
                         {selectedCompetition && (
                             <div>
-                                <h2 className="text-xl font-semibold text-indigo-700 mb-2">
+                                <h2
+                                    className="text-xl font-semibold text-indigo-700 mb-2"
+                                    style={textStyle}
+                                >
                                     {
                                         selectedCompetition.name
                                     }
@@ -696,7 +711,12 @@ export default function HomePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
+                                            <h3
+                                                className="text-center font-medium text-[var(--foreground)] mb-2"
+                                                style={
+                                                    textStyle
+                                                }
+                                            >
                                                 Topic ID
                                             </h3>
                                             <p className="text-2xl font-bold text-center text-purple-600">
@@ -709,10 +729,20 @@ export default function HomePage() {
 
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
+                                            <h3
+                                                className="text-center font-medium text-[var(--foreground)] mb-2"
+                                                style={
+                                                    textStyle
+                                                }
+                                            >
                                                 Start Date
                                             </h3>
-                                            <p className="text-sm text-center font-medium">
+                                            <p
+                                                className="text-sm text-center font-medium"
+                                                style={
+                                                    textStyle
+                                                }
+                                            >
                                                 {formatDate(
                                                     selectedCompetition.start_date,
                                                     'PPpp'
@@ -723,10 +753,20 @@ export default function HomePage() {
 
                                     <div className="border border-gray-300 rounded-lg shadow-sm p-4 bg-white hover:shadow-md transition-shadow">
                                         <div>
-                                            <h3 className="text-center font-medium text-[var(--foreground)] mb-2">
+                                            <h3
+                                                className="text-center font-medium text-[var(--foreground)] mb-2"
+                                                style={
+                                                    textStyle
+                                                }
+                                            >
                                                 End Date
                                             </h3>
-                                            <p className="text-sm text-center font-medium">
+                                            <p
+                                                className="text-sm text-center font-medium"
+                                                style={
+                                                    textStyle
+                                                }
+                                            >
                                                 {formatDate(
                                                     selectedCompetition.end_date,
                                                     'PPpp'
@@ -750,7 +790,10 @@ export default function HomePage() {
                         </div>
                     ) : inferenceData ? (
                         <div>
-                            <h2 className="text-xl font-semibold mb-4 text-[var(--foreground)] border-b pb-2 border-gray-200">
+                            <h2
+                                className="text-xl font-semibold mb-4 text-[var(--foreground)] border-b pb-2 border-gray-200"
+                                style={textStyle}
+                            >
                                 Metrics
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -1432,7 +1475,10 @@ export default function HomePage() {
                                 )}
                         </div>
                     ) : (
-                        <div className="text-center text-[var(--muted-foreground)] p-8 bg-gray-50 rounded-lg">
+                        <div
+                            className="text-center text-[var(--muted-foreground)] p-8 bg-gray-50 rounded-lg"
+                            style={textStyle}
+                        >
                             <div className="text-4xl mb-2">
                                 📊
                             </div>

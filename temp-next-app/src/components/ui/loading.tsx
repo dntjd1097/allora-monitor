@@ -7,6 +7,12 @@ interface LoadingProps
     text?: string;
 }
 
+// 모바일 환경에서 텍스트 가독성 향상을 위한 스타일
+const textStyle = {
+    color: '#000000',
+    fontWeight: 600,
+};
+
 export function Loading({
     className,
     size = 'md',
@@ -34,7 +40,10 @@ export function Loading({
                 )}
             />
             {text && (
-                <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                <p
+                    className="mt-2 text-sm text-[var(--muted-foreground)]"
+                    style={textStyle}
+                >
                     {text}
                 </p>
             )}
