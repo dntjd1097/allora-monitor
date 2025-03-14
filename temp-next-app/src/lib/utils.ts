@@ -2,6 +2,40 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, parseISO } from 'date-fns';
 
+// 런타임 환경 변수 타입 정의
+declare global {
+    interface Window {
+        __ENV__: {
+            NEXT_PUBLIC_API_URL: string;
+        };
+    }
+}
+
+/**
+ * 환경 변수를 가져오는 함수
+ */
+export function getEnv(
+    key: keyof Window['__ENV__']
+): string {
+    // 브라우저 환경에서는 window.__ENV__에서 가져오고, 서버 환경에서는 process.env에서 가져옵니다.
+    if (typeof window !== 'undefined' && window.__ENV__) {
+        return window.__ENV__[key];
+    }
+    return (
+        (process.env[`NEXT_PUBLIC_${key}`] as string) || ''
+    );
+}
+
+/**
+ * API URL을 가져오는 함수
+ */
+export function getApiUrl(): string {
+    return (
+        getEnv('NEXT_PUBLIC_API_URL') ||
+        'http://localhost:8080'
+    );
+}
+
 /**
  * Combines multiple class names with Tailwind CSS
  */
