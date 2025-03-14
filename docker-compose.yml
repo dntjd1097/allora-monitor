@@ -29,8 +29,8 @@ services:
         image: caddy:2-alpine
         container_name: allora-monitor-caddy
         ports:
-            - '80:80'
-            - '443:443'
+            - '280:80'
+            - '2443:443'
         volumes:
             - ./caddy/Caddyfile:/etc/caddy/Caddyfile
             - caddy_data:/data
