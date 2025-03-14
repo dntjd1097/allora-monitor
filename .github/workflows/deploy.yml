@@ -1,0 +1,50 @@
+name: Deploy to Production
+
+on:
+    push:
+        branches:
+            - main
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        runs-on: self-hosted
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Create docker network if not exists
+              run: |
+                  sudo docker network create allora-web-network || true
+                  sudo usermod -aG docker $USER || true
+                  newgrp docker || true
+
+            - name: Setting up directories
+              run: |
+                  mkdir -p $(pwd)/backend/data
+                  chmod 777 $(pwd)/backend/data
+                  mkdir -p $(pwd)/caddy/data
+                  chmod 777 $(pwd)/caddy/data
+                  mkdir -p $(pwd)/caddy/config
+                  chmod 777 $(pwd)/caddy/config
+
+            - name: Build and deploy with Docker Compose
+              run: |
+                  sudo docker compose down || true
+                  sudo docker compose up -d --build
+                  sudo docker system prune -f
+
+            - name: Check running containers
+              run: sudo docker ps
+
+            - name: Show logs
+              run: |
+                  echo "Backend logs:"
+                  sudo docker logs allora-monitor-backend --tail 20
+                  echo "Frontend logs:"
+                  sudo docker logs allora-monitor-frontend --tail 20
+                  echo "Caddy logs:"
+                  sudo docker logs allora-monitor-caddy --tail 20
