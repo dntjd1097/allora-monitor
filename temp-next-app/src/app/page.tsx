@@ -247,10 +247,13 @@ export default function HomePage() {
                 // 페이지네이션 정보 설정
                 if (data.pagination) {
                     setPagination(data.pagination);
-                    // 현재 블록 높이 업데이트
-                    setBlockHeight(
-                        data.pagination.current_height
-                    );
+                    // 현재 블록 높이 업데이트 - only update if blockHeight is not null
+                    // This prevents the double API call when clicking "Latest"
+                    if (blockHeight !== null) {
+                        setBlockHeight(
+                            data.pagination.current_height
+                        );
+                    }
                 }
             } catch (err) {
                 console.error(
@@ -651,23 +654,6 @@ export default function HomePage() {
         setCustomHeight('');
     };
 
-    // 사용자 정의 Height 입력 핸들러
-    const handleCustomHeightChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        setCustomHeight(e.target.value);
-    };
-
-    // 사용자 정의 Height 제출 핸들러
-    const handleCustomHeightSubmit = (
-        e: React.FormEvent
-    ) => {
-        e.preventDefault();
-        if (customHeight.trim()) {
-            setBlockHeight(customHeight.trim());
-        }
-    };
-
     // 모든 heights 표시 토글
     const toggleShowAllHeights = () => {
         setShowAllHeights(!showAllHeights);
@@ -909,7 +895,7 @@ export default function HomePage() {
                                 <div className="mb-8">
                                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
                                         <div className="flex items-center space-x-2 mb-3 md:mb-0">
-                                            <span className="text-sm font-medium text-[var(--foreground)]">
+                                            {/* <span className="text-sm font-medium text-[var(--foreground)]">
                                                 Current
                                                 Block
                                                 Height:
@@ -918,9 +904,7 @@ export default function HomePage() {
                                                 {
                                                     pagination.current_height
                                                 }
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                                            </span> */}
                                             <div className="flex flex-col space-y-2">
                                                 <div className="flex items-center space-x-2">
                                                     <label
@@ -998,31 +982,9 @@ export default function HomePage() {
                                                         heights...
                                                     </span>
                                                 )}
-                                                <form
-                                                    onSubmit={
-                                                        handleCustomHeightSubmit
-                                                    }
-                                                    className="flex items-center space-x-2"
-                                                >
-                                                    <input
-                                                        type="text"
-                                                        value={
-                                                            customHeight
-                                                        }
-                                                        onChange={
-                                                            handleCustomHeightChange
-                                                        }
-                                                        placeholder="Enter block height"
-                                                        className="text-sm rounded border border-gray-300 px-2 py-1 bg-white"
-                                                    />
-                                                    <button
-                                                        type="submit"
-                                                        className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-sm font-medium hover:bg-indigo-100"
-                                                    >
-                                                        Go
-                                                    </button>
-                                                </form>
                                             </div>
+                                        </div>
+                                        <div className="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto">
                                             <div className="flex items-center space-x-2">
                                                 <button
                                                     onClick={
