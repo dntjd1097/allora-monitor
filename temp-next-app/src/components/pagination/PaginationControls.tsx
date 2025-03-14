@@ -11,6 +11,7 @@ interface PaginationControlsProps {
     setCustomHeight: (height: string) => void;
     showAllHeights: boolean;
     toggleShowAllHeights: () => void;
+    onRefresh?: () => void;
 }
 
 export const PaginationControls: React.FC<
@@ -25,6 +26,7 @@ export const PaginationControls: React.FC<
     setCustomHeight,
     showAllHeights,
     toggleShowAllHeights,
+    onRefresh,
 }) => {
     // Go to previous block
     const goToPrevBlock = () => {
@@ -42,7 +44,12 @@ export const PaginationControls: React.FC<
 
     // Go to latest block (set block height to null)
     const goToLatestBlock = () => {
-        setBlockHeight(null);
+        if (blockHeight !== null || customHeight !== '') {
+            setBlockHeight(null);
+            setCustomHeight('');
+        } else if (onRefresh) {
+            onRefresh();
+        }
     };
 
     // Handle height selection change
@@ -50,19 +57,18 @@ export const PaginationControls: React.FC<
         e: React.ChangeEvent<HTMLSelectElement>
     ) => {
         const selectedHeight = e.target.value;
-        if (selectedHeight === 'custom') {
-            // Switch to custom input field
-            return;
-        }
-        setBlockHeight(
-            selectedHeight === 'latest'
-                ? null
-                : selectedHeight
-        );
         setCustomHeight('');
+        if (selectedHeight !== 'latest') {
+            setBlockHeight(selectedHeight);
+        }
+        goToLatestBlock();
     };
 
     if (!pagination) return null;
+
+    // Latest 버튼의 활성화 상태 결정
+    const isLatestActive =
+        blockHeight === null && customHeight === '';
 
     return (
         <div className="mb-8">
@@ -93,9 +99,7 @@ export const PaginationControls: React.FC<
                                 <option value="latest">
                                     Latest
                                 </option>
-                                <option value="custom">
-                                    Custom...
-                                </option>
+
                                 {(showAllHeights
                                     ? availableHeights
                                     : availableHeights.slice(
@@ -126,11 +130,6 @@ export const PaginationControls: React.FC<
                                 </button>
                             )}
                         </div>
-                        {/* {heightsLoading && (
-                            <span className="text-xs text-[var(--muted-foreground)]">
-                                Loading heights...
-                            </span>
-                        )} */}
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto">
@@ -164,7 +163,11 @@ export const PaginationControls: React.FC<
                         </button>
                         <button
                             onClick={goToLatestBlock}
-                            className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded text-sm font-medium hover:bg-indigo-100 flex items-center"
+                            className={`px-3 py-1 rounded text-sm font-medium flex items-center ${
+                                isLatestActive
+                                    ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
+                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                            }`}
                         >
                             <svg
                                 className="w-4 h-4 mr-1"

@@ -99,6 +99,12 @@ export default function HomePage() {
         }
     }, [selectedCompetition]);
 
+    // 데이터 새로고침 함수 - Latest 버튼을 클릭했을 때 사용
+    const refreshData = useCallback(() => {
+        console.log('Manually refreshing data...');
+        fetchInferenceData();
+    }, [fetchInferenceData]);
+
     // Toggle show all heights
     const toggleShowAllHeights = () => {
         setShowAllHeights(!showAllHeights);
@@ -270,6 +276,7 @@ export default function HomePage() {
                                     toggleShowAllHeights={
                                         toggleShowAllHeights
                                     }
+                                    onRefresh={refreshData}
                                 />
                             )}
 
