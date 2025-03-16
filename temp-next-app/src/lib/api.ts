@@ -12,11 +12,11 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
     // Add timeout to prevent hanging requests
-    timeout: 10000,
+    timeout: 1000,
 });
 
 // Maximum number of retries
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 0;
 
 // Helper function to handle API requests with retry logic
 async function apiRequest<T>(

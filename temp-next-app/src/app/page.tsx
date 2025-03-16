@@ -66,9 +66,15 @@ export default function HomePage() {
         fontWeight: 600,
     };
 
+    // Add a ref to track the current request
+    const currentRequestIdRef = useRef<number>(0);
+
     // Function to fetch inference data
     const fetchInferenceData = useCallback(async () => {
         if (!selectedCompetition) return;
+
+        // Generate a unique request ID to track this specific request
+        const requestId = ++currentRequestIdRef.current;
 
         try {
             setInferenceLoading(true);
@@ -80,6 +86,15 @@ export default function HomePage() {
                 selectedCompetition.topic_id.toString(),
                 blockHeight || undefined
             );
+
+            // Check if this is still the most recent request
+            if (requestId !== currentRequestIdRef.current) {
+                console.log(
+                    'Ignoring stale response for topic_id:',
+                    selectedCompetition.topic_id
+                );
+                return; // Ignore stale responses
+            }
 
             console.log('Fetched inference data:', data);
 
@@ -94,20 +109,26 @@ export default function HomePage() {
                 setInferenceData(data);
             }
         } catch (err) {
-            console.error(
-                'Error fetching inference data:',
-                err
-            );
-            setInferenceError(
-                `Failed to fetch inference data: ${
-                    err instanceof Error
-                        ? err.message
-                        : 'Unknown error'
-                }`
-            );
-            setInferenceData(null);
+            // Only update state if this is still the most recent request
+            if (requestId === currentRequestIdRef.current) {
+                console.error(
+                    'Error fetching inference data:',
+                    err
+                );
+                setInferenceError(
+                    `Failed to fetch inference data: ${
+                        err instanceof Error
+                            ? err.message
+                            : 'Unknown error'
+                    }`
+                );
+                setInferenceData(null);
+            }
         } finally {
-            setInferenceLoading(false);
+            // Only update loading state if this is still the most recent request
+            if (requestId === currentRequestIdRef.current) {
+                setInferenceLoading(false);
+            }
         }
     }, [selectedCompetition, blockHeight]);
 
@@ -115,16 +136,45 @@ export default function HomePage() {
     const fetchHeights = useCallback(async () => {
         if (!selectedCompetition) return;
 
+        // Generate a unique request ID
+        const requestId = ++currentRequestIdRef.current;
+
         try {
             setHeightsLoading(true);
             const response = await fetchTopicHeights(
                 selectedCompetition.topic_id.toString()
             );
+
+            // Check if this is still the most recent request
+            if (requestId !== currentRequestIdRef.current) {
+                console.log(
+                    'Ignoring stale heights response for topic_id:',
+                    selectedCompetition.topic_id
+                );
+                return; // Ignore stale responses
+            }
+
             if (response.data && response.data.heights) {
                 setAvailableHeights(response.data.heights);
                 // If heights are empty, mark as no data
                 if (response.data.heights.length === 0) {
                     setHasNoData(true);
+                } else {
+                    // If we have heights, make sure we're not in a "no data" state
+                    setHasNoData(false);
+
+                    // If we're at the latest height (blockHeight is null), trigger a fetch
+                    if (blockHeight === null) {
+                        // We'll let the blockHeight effect trigger the fetch
+                        // But we need to ensure inferenceData is cleared if we're refreshing
+                        if (
+                            inferenceData &&
+                            inferenceData.data.topic_id !==
+                                selectedCompetition.topic_id.toString()
+                        ) {
+                            setInferenceData(null);
+                        }
+                    }
                 }
             } else {
                 // Handle empty heights
@@ -132,17 +182,33 @@ export default function HomePage() {
                 setHasNoData(true);
             }
         } catch (err) {
-            console.error('Error fetching heights:', err);
-            setAvailableHeights([]);
-            setHasNoData(true);
+            // Only update state if this is still the most recent request
+            if (requestId === currentRequestIdRef.current) {
+                console.error(
+                    'Error fetching heights:',
+                    err
+                );
+                setAvailableHeights([]);
+                setHasNoData(true);
+            }
         } finally {
-            setHeightsLoading(false);
+            // Only update loading state if this is still the most recent request
+            if (requestId === currentRequestIdRef.current) {
+                setHeightsLoading(false);
+            }
         }
-    }, [selectedCompetition]);
+    }, [selectedCompetition, blockHeight, inferenceData]);
 
     // 데이터 새로고침 함수 - Latest 버튼을 클릭했을 때 사용
     const refreshData = useCallback(() => {
         console.log('Manually refreshing data...');
+        // Reset request tracking
+        currentRequestIdRef.current = 0;
+        // Reset error state
+        setInferenceError(null);
+        // Reset no data flag
+        setHasNoData(false);
+        // Fetch fresh data
         fetchInferenceData();
     }, [fetchInferenceData]);
 
@@ -155,9 +221,35 @@ export default function HomePage() {
     const handleSelectCompetition = (
         competition: Competition
     ) => {
+        // If selecting the same competition, just refresh the data
+        if (selectedCompetition?.id === competition.id) {
+            console.log(
+                'Re-selecting the same competition, refreshing data...'
+            );
+            // Reset request tracking
+            currentRequestIdRef.current = 0;
+            // Clear any error state
+            setInferenceError(null);
+            // Reset no data flag
+            setHasNoData(false);
+            // Trigger a fresh data fetch
+            fetchHeights().then(() => {
+                // Force a refresh of inference data after heights are fetched
+                if (!hasNoData) {
+                    fetchInferenceData();
+                }
+            });
+            return;
+        }
+
+        // Reset request tracking when changing competitions
+        currentRequestIdRef.current = 0;
+
         setSelectedCompetition(competition);
         setBlockHeight(null);
         setHasNoData(false); // Reset no data state when changing competition
+        setInferenceData(null); // Clear previous inference data
+        setInferenceError(null); // Clear previous errors
     };
 
     // Extract synthesis values from inference data
@@ -217,15 +309,38 @@ export default function HomePage() {
         fetchCompetitions();
     }, []);
 
-    // Effect for fetching inference data when competition or block height changes
+    // Combined effect for fetching data when competition changes
     useEffect(() => {
-        fetchInferenceData();
-    }, [fetchInferenceData]);
+        // Only fetch data if we have a selected competition
+        if (selectedCompetition) {
+            // First fetch heights
+            fetchHeights();
+        }
+    }, [selectedCompetition, fetchHeights]);
 
-    // Effect for fetching heights when competition changes
+    // Separate effect for fetching inference data when blockHeight changes
+    // Note: We removed selectedCompetition from the dependency array
     useEffect(() => {
-        fetchHeights();
-    }, [fetchHeights]);
+        if (selectedCompetition && !hasNoData) {
+            // Add a small delay to ensure state updates have propagated
+            const timer = setTimeout(() => {
+                console.log(
+                    'Fetching inference data for topic_id:',
+                    selectedCompetition.topic_id,
+                    'blockHeight:',
+                    blockHeight
+                );
+                fetchInferenceData();
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [
+        blockHeight,
+        fetchInferenceData,
+        hasNoData,
+        selectedCompetition,
+    ]);
 
     // Effect for auto refresh of heights only
     useEffect(() => {
