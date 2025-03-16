@@ -49,8 +49,39 @@ func main() {
 		log.Fatalf("데이터 디렉토리 생성 실패: %v", err)
 	}
 
-	// 데이터베이스 연결
+	// 데이터 디렉토리 권한 확인
 	dbPath := filepath.Join(config.DataDir, "allora-monitor.db")
+
+	// 데이터베이스 파일이 이미 존재하는 경우 권한 확인
+	if _, err := os.Stat(dbPath); err == nil {
+		// 파일이 존재하면 쓰기 권한 확인
+		file, err := os.OpenFile(dbPath, os.O_WRONLY, 0644)
+		if err != nil {
+			log.Printf("데이터베이스 파일 쓰기 권한 확인 실패: %v", err)
+			log.Printf("데이터베이스 파일 권한을 수정합니다...")
+
+			// 파일 권한 변경 시도
+			if err := os.Chmod(dbPath, 0644); err != nil {
+				log.Printf("데이터베이스 파일 권한 변경 실패: %v", err)
+
+				// 파일 백업 및 새로 생성
+				backupPath := dbPath + ".bak." + time.Now().Format("20060102150405")
+				log.Printf("데이터베이스 파일을 백업하고 새로 생성합니다: %s", backupPath)
+
+				if err := os.Rename(dbPath, backupPath); err != nil {
+					log.Fatalf("데이터베이스 파일 백업 실패: %v", err)
+				}
+			} else {
+				if file != nil {
+					file.Close()
+				}
+			}
+		} else {
+			file.Close()
+		}
+	}
+
+	// 데이터베이스 연결
 	db, err := app.NewDatabase(dbPath)
 	if err != nil {
 		log.Fatalf("데이터베이스 연결 실패: %v", err)

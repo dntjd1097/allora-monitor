@@ -1898,3 +1898,68 @@ func getBoolValue(data map[string]interface{}, key string, defaultValue bool) bo
 	}
 	return defaultValue
 }
+
+// GetInactiveCompetitionsV2는 비활성 상태의 경쟁 데이터만 가져옵니다
+func (d *Database) GetInactiveCompetitionsV2() ([]CompetitionV2, error) {
+	if d.debug {
+		log.Println("GetInactiveCompetitionsV2 시작")
+	}
+
+	rows, err := d.db.Query(
+		`SELECT 
+			id, name, preview_image_url, description, 
+			topic_id, prize_pool, start_date, end_date, season_id, 
+			tags, is_active 
+		FROM competitions_v2 
+		WHERE is_active = 0
+		ORDER BY id`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("데이터 조회 실패: %w", err)
+	}
+	defer rows.Close()
+
+	var competitions []CompetitionV2
+	for rows.Next() {
+		var comp CompetitionV2
+		var startDateStr, endDateStr string
+		var tagsJSON string
+
+		err := rows.Scan(
+			&comp.ID, &comp.Name, &comp.PreviewImageURL, &comp.Description,
+			&comp.TopicID, &comp.PrizePool, &startDateStr, &endDateStr, &comp.SeasonID,
+			&tagsJSON, &comp.IsActive,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("데이터 스캔 실패: %w", err)
+		}
+
+		// 날짜 문자열을 시간으로 변환
+		comp.StartDate, err = time.Parse(time.RFC3339, startDateStr)
+		if err != nil {
+			return nil, fmt.Errorf("시작 날짜 파싱 실패: %w", err)
+		}
+
+		comp.EndDate, err = time.Parse(time.RFC3339, endDateStr)
+		if err != nil {
+			return nil, fmt.Errorf("종료 날짜 파싱 실패: %w", err)
+		}
+
+		// 태그 JSON 파싱
+		if err := json.Unmarshal([]byte(tagsJSON), &comp.Tags); err != nil {
+			return nil, fmt.Errorf("태그 JSON 파싱 실패: %w", err)
+		}
+
+		competitions = append(competitions, comp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("결과 처리 중 오류: %w", err)
+	}
+
+	if d.debug {
+		log.Printf("비활성 경쟁 데이터 조회 완료: %d개", len(competitions))
+	}
+
+	return competitions, nil
+}

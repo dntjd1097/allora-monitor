@@ -561,14 +561,17 @@ func (s *Service) HandleGetCompetitionsV2(w http.ResponseWriter, r *http.Request
 	}
 
 	// 쿼리 파라미터에서 active 필터 확인
-	activeOnly := r.URL.Query().Get("active") == "true"
+	activeParam := r.URL.Query().Get("active")
 
 	var competitions []CompetitionV2
 	var err error
 
-	if activeOnly {
+	if activeParam == "true" {
 		// 활성 경쟁만 조회
 		competitions, err = s.db.GetActiveCompetitionsV2()
+	} else if activeParam == "false" {
+		// 비활성 경쟁만 조회
+		competitions, err = s.db.GetInactiveCompetitionsV2()
 	} else {
 		// 모든 경쟁 조회
 		competitions, err = s.db.GetCompetitionsV2()
