@@ -4,7 +4,8 @@ import { Competition } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
 interface CompetitionSelectorProps {
-    competitions: Competition[];
+    activeCompetitions: Competition[];
+    inactiveCompetitions: Competition[];
     selectedCompetition: Competition | null;
     onSelectCompetition: (competition: Competition) => void;
 }
@@ -12,7 +13,8 @@ interface CompetitionSelectorProps {
 export const CompetitionSelector: React.FC<
     CompetitionSelectorProps
 > = ({
-    competitions,
+    activeCompetitions,
+    inactiveCompetitions,
     selectedCompetition,
     onSelectCompetition,
 }) => {
@@ -31,32 +33,80 @@ export const CompetitionSelector: React.FC<
                 >
                     Competition
                 </h2>
-                <div className="flex flex-wrap gap-2">
-                    {competitions.map((competition) => (
-                        <Button
-                            key={competition.id}
-                            variant={
-                                selectedCompetition?.id ===
-                                competition.id
-                                    ? 'default'
-                                    : 'outline'
-                            }
-                            onClick={() =>
-                                onSelectCompetition(
-                                    competition
+
+                {/* Active Competitions Section */}
+                {activeCompetitions.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="text-md font-medium mb-2 text-green-600">
+                            Active Competitions
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                            {activeCompetitions.map(
+                                (competition) => (
+                                    <Button
+                                        key={competition.id}
+                                        variant={
+                                            selectedCompetition?.id ===
+                                            competition.id
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        onClick={() =>
+                                            onSelectCompetition(
+                                                competition
+                                            )
+                                        }
+                                        className={
+                                            selectedCompetition?.id ===
+                                            competition.id
+                                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                                : 'hover:bg-gray-100 border-green-500'
+                                        }
+                                    >
+                                        {competition.id}
+                                    </Button>
                                 )
-                            }
-                            className={
-                                selectedCompetition?.id ===
-                                competition.id
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                    : 'hover:bg-gray-100'
-                            }
-                        >
-                            {competition.id}
-                        </Button>
-                    ))}
-                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Inactive Competitions Section */}
+                {inactiveCompetitions.length > 0 && (
+                    <div>
+                        <h3 className="text-md font-medium mb-2 text-gray-600">
+                            Inactive Competitions
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                            {inactiveCompetitions.map(
+                                (competition) => (
+                                    <Button
+                                        key={competition.id}
+                                        variant={
+                                            selectedCompetition?.id ===
+                                            competition.id
+                                                ? 'default'
+                                                : 'outline'
+                                        }
+                                        onClick={() =>
+                                            onSelectCompetition(
+                                                competition
+                                            )
+                                        }
+                                        className={
+                                            selectedCompetition?.id ===
+                                            competition.id
+                                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                                : 'hover:bg-gray-100 border-gray-400'
+                                        }
+                                    >
+                                        {competition.id}
+                                    </Button>
+                                )
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="col-span-3 p-4 bg-white">
@@ -67,6 +117,15 @@ export const CompetitionSelector: React.FC<
                             style={textStyle}
                         >
                             {selectedCompetition.name}
+                            {selectedCompetition.is_active ? (
+                                <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                    Active
+                                </span>
+                            ) : (
+                                <span className="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
+                                    Inactive
+                                </span>
+                            )}
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">

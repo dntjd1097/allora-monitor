@@ -60,8 +60,9 @@ export const PaginationControls: React.FC<
         setCustomHeight('');
         if (selectedHeight !== 'latest') {
             setBlockHeight(selectedHeight);
+        } else {
+            goToLatestBlock();
         }
-        goToLatestBlock();
     };
 
     if (!pagination) return null;
@@ -69,6 +70,10 @@ export const PaginationControls: React.FC<
     // Latest 버튼의 활성화 상태 결정
     const isLatestActive =
         blockHeight === null && customHeight === '';
+
+    // Check if there are no available heights
+    const noHeightsAvailable =
+        availableHeights.length === 0;
 
     return (
         <div className="mb-8">
@@ -82,52 +87,67 @@ export const PaginationControls: React.FC<
                             >
                                 Select Height:
                             </label>
-                            <select
-                                id="height-select"
-                                value={
-                                    customHeight
-                                        ? 'custom'
-                                        : blockHeight ||
-                                          'latest'
-                                }
-                                onChange={
-                                    handleHeightChange
-                                }
-                                className="text-sm rounded border border-gray-300 px-2 py-1 bg-white"
-                                disabled={heightsLoading}
-                            >
-                                <option value="latest">
-                                    Latest
-                                </option>
-
-                                {(showAllHeights
-                                    ? availableHeights
-                                    : availableHeights.slice(
-                                          0,
-                                          10
-                                      )
-                                ).map((height) => (
-                                    <option
-                                        key={height}
-                                        value={height}
+                            {noHeightsAvailable &&
+                            !heightsLoading ? (
+                                <span className="text-sm text-gray-500 italic">
+                                    No block heights
+                                    available
+                                </span>
+                            ) : (
+                                <>
+                                    <select
+                                        id="height-select"
+                                        value={
+                                            customHeight
+                                                ? 'custom'
+                                                : blockHeight ||
+                                                  'latest'
+                                        }
+                                        onChange={
+                                            handleHeightChange
+                                        }
+                                        className="text-sm rounded border border-gray-300 px-2 py-1 bg-white"
+                                        disabled={
+                                            heightsLoading ||
+                                            noHeightsAvailable
+                                        }
                                     >
-                                        {height}
-                                    </option>
-                                ))}
-                            </select>
-                            {availableHeights.length >
-                                10 && (
-                                <button
-                                    type="button"
-                                    onClick={
-                                        toggleShowAllHeights
-                                    }
-                                    className="text-xs text-indigo-600 hover:text-indigo-800"
-                                >
-                                    {showAllHeights
-                                        ? 'Show Less'
-                                        : `Show All (${availableHeights.length})`}
-                                </button>
+                                        <option value="latest">
+                                            Latest
+                                        </option>
+
+                                        {(showAllHeights
+                                            ? availableHeights
+                                            : availableHeights.slice(
+                                                  0,
+                                                  10
+                                              )
+                                        ).map((height) => (
+                                            <option
+                                                key={height}
+                                                value={
+                                                    height
+                                                }
+                                            >
+                                                {height}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {availableHeights.length >
+                                        10 && (
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                toggleShowAllHeights
+                                            }
+                                            className="text-xs text-indigo-600 hover:text-indigo-800"
+                                        >
+                                            {showAllHeights
+                                                ? 'Show Less'
+                                                : `Show All (${availableHeights.length})`}
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
@@ -137,10 +157,12 @@ export const PaginationControls: React.FC<
                         <button
                             onClick={goToPrevBlock}
                             disabled={
-                                !pagination.prev_height
+                                !pagination.prev_height ||
+                                noHeightsAvailable
                             }
                             className={`px-3 py-1 rounded text-sm font-medium flex items-center ${
-                                pagination.prev_height
+                                pagination.prev_height &&
+                                !noHeightsAvailable
                                     ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                                     : 'bg-gray-100 text-[var(--muted-foreground)] cursor-not-allowed'
                             }`}
@@ -188,10 +210,12 @@ export const PaginationControls: React.FC<
                         <button
                             onClick={goToNextBlock}
                             disabled={
-                                !pagination.next_height
+                                !pagination.next_height ||
+                                noHeightsAvailable
                             }
                             className={`px-3 py-1 rounded text-sm font-medium flex items-center ${
-                                pagination.next_height
+                                pagination.next_height &&
+                                !noHeightsAvailable
                                     ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                                     : 'bg-gray-100 text-[var(--muted-foreground)] cursor-not-allowed'
                             }`}

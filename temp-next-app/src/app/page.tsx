@@ -10,6 +10,7 @@ import { Loading } from '@/components/ui/loading';
 import {
     Competition,
     fetchActiveCompetitions,
+    fetchInactiveCompetitions,
     fetchTopicInference,
     fetchTopicHeights,
     TopicInferenceData,
@@ -22,9 +23,10 @@ import { ConfidenceAndAdditionalInfo } from '@/components/metrics/ConfidenceAndA
 import { SynthesisValueItem } from '@/types';
 
 export default function HomePage() {
-    const [competitions, setCompetitions] = useState<
-        Competition[]
-    >([]);
+    const [activeCompetitions, setActiveCompetitions] =
+        useState<Competition[]>([]);
+    const [inactiveCompetitions, setInactiveCompetitions] =
+        useState<Competition[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCompetition, setSelectedCompetition] =
@@ -33,6 +35,9 @@ export default function HomePage() {
         useState<TopicInferenceData | null>(null);
     const [inferenceLoading, setInferenceLoading] =
         useState<boolean>(false);
+    const [inferenceError, setInferenceError] = useState<
+        string | null
+    >(null);
 
     // Pagination state
     const [blockHeight, setBlockHeight] = useState<
@@ -51,6 +56,10 @@ export default function HomePage() {
     const [autoRefreshHeights] = useState<boolean>(true);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Add a new state for checking if the competition has data
+    const [hasNoData, setHasNoData] =
+        useState<boolean>(false);
+
     // Style for better text readability on mobile
     const textStyle = {
         color: '#000000',
@@ -63,18 +72,40 @@ export default function HomePage() {
 
         try {
             setInferenceLoading(true);
+            setInferenceError(null); // Reset error state
+            setHasNoData(false); // Reset no data state
+
             // Use the blockHeight parameter directly with the API function
             const data = await fetchTopicInference(
                 selectedCompetition.topic_id.toString(),
                 blockHeight || undefined
             );
+
             console.log('Fetched inference data:', data);
-            setInferenceData(data);
+
+            if (data === null) {
+                // Handle the case when no data is available
+                setInferenceError(
+                    `No inference data available for ${selectedCompetition.name} (Topic ID: ${selectedCompetition.topic_id})`
+                );
+                setInferenceData(null);
+                setHasNoData(true);
+            } else {
+                setInferenceData(data);
+            }
         } catch (err) {
             console.error(
                 'Error fetching inference data:',
                 err
             );
+            setInferenceError(
+                `Failed to fetch inference data: ${
+                    err instanceof Error
+                        ? err.message
+                        : 'Unknown error'
+                }`
+            );
+            setInferenceData(null);
         } finally {
             setInferenceLoading(false);
         }
@@ -91,9 +122,19 @@ export default function HomePage() {
             );
             if (response.data && response.data.heights) {
                 setAvailableHeights(response.data.heights);
+                // If heights are empty, mark as no data
+                if (response.data.heights.length === 0) {
+                    setHasNoData(true);
+                }
+            } else {
+                // Handle empty heights
+                setAvailableHeights([]);
+                setHasNoData(true);
             }
         } catch (err) {
             console.error('Error fetching heights:', err);
+            setAvailableHeights([]);
+            setHasNoData(true);
         } finally {
             setHeightsLoading(false);
         }
@@ -116,6 +157,7 @@ export default function HomePage() {
     ) => {
         setSelectedCompetition(competition);
         setBlockHeight(null);
+        setHasNoData(false); // Reset no data state when changing competition
     };
 
     // Extract synthesis values from inference data
@@ -135,12 +177,31 @@ export default function HomePage() {
         const fetchCompetitions = async () => {
             try {
                 setLoading(true);
-                const data =
-                    await fetchActiveCompetitions();
-                console.log('Fetched competitions:', data);
-                setCompetitions(data);
-                if (data.length > 0) {
-                    setSelectedCompetition(data[0]);
+                // Fetch both active and inactive competitions
+                const [activeData, inactiveData] =
+                    await Promise.all([
+                        fetchActiveCompetitions(),
+                        fetchInactiveCompetitions(),
+                    ]);
+
+                console.log(
+                    'Fetched active competitions:',
+                    activeData
+                );
+                console.log(
+                    'Fetched inactive competitions:',
+                    inactiveData
+                );
+
+                setActiveCompetitions(activeData);
+                setInactiveCompetitions(inactiveData);
+
+                // Set the first active competition as selected by default
+                // If no active competitions, use the first inactive one
+                if (activeData.length > 0) {
+                    setSelectedCompetition(activeData[0]);
+                } else if (inactiveData.length > 0) {
+                    setSelectedCompetition(inactiveData[0]);
                 }
             } catch (err) {
                 console.error(
@@ -220,7 +281,10 @@ export default function HomePage() {
             <div className="border border-gray-300 rounded-lg overflow-hidden shadow-lg bg-white">
                 {/* Competition Selector Component */}
                 <CompetitionSelector
-                    competitions={competitions}
+                    activeCompetitions={activeCompetitions}
+                    inactiveCompetitions={
+                        inactiveCompetitions
+                    }
                     selectedCompetition={
                         selectedCompetition
                     }
@@ -236,6 +300,46 @@ export default function HomePage() {
                                 size="md"
                                 text="Loading inference data..."
                             />
+                        </div>
+                    ) : inferenceError ? (
+                        <div className="text-center text-red-500 p-8 bg-red-50 rounded-lg border border-red-200">
+                            <div className="text-4xl mb-2">
+                                ⚠️
+                            </div>
+                            <p className="font-medium">
+                                {inferenceError}
+                            </p>
+                            {selectedCompetition &&
+                                !selectedCompetition.is_active && (
+                                    <p className="mt-2 text-gray-600">
+                                        This competition is
+                                        inactive and may not
+                                        have available data.
+                                    </p>
+                                )}
+                        </div>
+                    ) : hasNoData ? (
+                        <div className="text-center text-amber-600 p-8 bg-amber-50 rounded-lg border border-amber-200">
+                            <div className="text-4xl mb-2">
+                                📊
+                            </div>
+                            <p className="font-medium">
+                                No data available for{' '}
+                                {selectedCompetition?.name}{' '}
+                                (Topic ID:{' '}
+                                {
+                                    selectedCompetition?.topic_id
+                                }
+                                )
+                            </p>
+                            {selectedCompetition &&
+                                !selectedCompetition.is_active && (
+                                    <p className="mt-2 text-gray-600">
+                                        This competition is
+                                        inactive and may not
+                                        have available data.
+                                    </p>
+                                )}
                         </div>
                     ) : inferenceData ? (
                         <div>
@@ -300,7 +404,18 @@ export default function HomePage() {
                             <div className="text-4xl mb-2">
                                 📊
                             </div>
-                            No inference data available
+                            {selectedCompetition ? (
+                                <p>
+                                    No inference data
+                                    available for this
+                                    competition
+                                </p>
+                            ) : (
+                                <p>
+                                    Please select a
+                                    competition to view data
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

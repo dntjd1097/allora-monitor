@@ -338,6 +338,25 @@ export const fetchActiveCompetitions = async (): Promise<
     });
 };
 
+// Fetch inactive competitions from competitions/v2 endpoint
+export const fetchInactiveCompetitions = async (): Promise<
+    Competition[]
+> => {
+    if (DEBUG)
+        console.log(
+            'Fetching inactive competitions from competitions/v2'
+        );
+    if (USE_MOCK_DATA) return [];
+
+    return apiRequest(async () => {
+        const response = await api.get(
+            `${endpoints.competitionsV2}?active=false`
+        );
+        // The API returns an array directly
+        return response.data || [];
+    });
+};
+
 // New function to fetch active topics from competitions/v2 endpoint
 export const fetchActiveTopicsV2 = async () => {
     if (DEBUG)
@@ -379,7 +398,7 @@ export const fetchActiveTopics = async () => {
 export const fetchTopicInference = async (
     topicId: string,
     blockHeight?: string
-): Promise<TopicInferenceData> => {
+): Promise<TopicInferenceData | null> => {
     if (DEBUG)
         console.log('Fetching topic inference', {
             topicId,
@@ -607,19 +626,34 @@ export const fetchTopicInference = async (
         };
     }
 
-    return apiRequest(async () => {
-        const params = new URLSearchParams();
-        params.append('topic_id', topicId);
-        if (blockHeight) {
-            params.append('height', blockHeight);
-        }
+    try {
+        return await apiRequest(async () => {
+            const params = new URLSearchParams();
+            params.append('topic_id', topicId);
+            if (blockHeight) {
+                params.append('height', blockHeight);
+            }
 
-        const url = `${
-            endpoints.topicInference
-        }?${params.toString()}`;
-        const response = await api.get(url);
-        return response.data;
-    });
+            const url = `${
+                endpoints.topicInference
+            }?${params.toString()}`;
+            const response = await api.get(url);
+            return response.data;
+        });
+    } catch (error) {
+        // Check if it's a 404 error (data not found)
+        if (
+            error instanceof AxiosError &&
+            error.response?.status === 404
+        ) {
+            console.warn(
+                `No inference data available for topic ${topicId}`
+            );
+            return null;
+        }
+        // Re-throw other errors
+        throw error;
+    }
 };
 
 export const fetchAllTopicInferences = async () => {
@@ -656,14 +690,43 @@ export const fetchTopicHeights = async (
         );
     if (USE_MOCK_DATA) return MOCK_DATA.topicHeights;
 
-    return apiRequest(async () => {
-        const params = new URLSearchParams();
-        params.append('topic_id', topicId);
+    try {
+        return await apiRequest(async () => {
+            const params = new URLSearchParams();
+            params.append('topic_id', topicId);
 
-        const url = `${
-            endpoints.topicHeights
-        }?${params.toString()}`;
-        const response = await api.get(url);
-        return response.data;
-    });
+            const url = `${
+                endpoints.topicHeights
+            }?${params.toString()}`;
+            const response = await api.get(url);
+
+            // Check if heights is null and convert to empty array
+            if (
+                response.data &&
+                response.data.data &&
+                response.data.data.heights === null
+            ) {
+                response.data.data.heights = [];
+            }
+
+            return response.data;
+        });
+    } catch (error) {
+        console.error(
+            `Error fetching heights for topic ${topicId}:`,
+            error
+        );
+        // Return a valid response with empty heights
+        return {
+            data: {
+                heights: [],
+                heights_count: 0,
+                limit: 100,
+                offset: 0,
+                topic_id: topicId,
+                total_count: 0,
+            },
+            status: 'success',
+        };
+    }
 };
