@@ -5,12 +5,21 @@ services:
         build:
             context: ./backend
             dockerfile: Dockerfile
-        container_name: allora-monitor-backend
+        # container_name: allora-monitor-backend  # 레플리카 사용시 고정 이름 사용 불가
         volumes:
             - allora_monitor_data:/app/data
         restart: unless-stopped
         networks:
             - allora-web-network
+        deploy:
+            mode: replicated
+            replicas: 2 # 원하는 레플리카 수
+            restart_policy:
+                condition: on-failure
+            update_config:
+                parallelism: 1
+                delay: 10s
+                order: start-first
 
     frontend:
         build:
@@ -36,7 +45,7 @@ services:
 
     nginx:
         image: nginx:alpine
-        container_name: allora-monitor-nginx
+        # container_name: allora-monitor-nginx  # 레플리카 사용시 고정 이름 사용 불가
         ports:
             - '280:280'
             - '2443:2443'
@@ -48,10 +57,17 @@ services:
         restart: unless-stopped
         networks:
             - allora-web-network
+        deploy:
+            mode: replicated
+            replicas: 1 # 로드 밸런서는 하나만 실행
+            placement:
+                constraints:
+                    - node.role == manager # 매니저 노드에만 배포하여 포트 충돌 방지
 
 networks:
     allora-web-network:
-        driver: bridge
+        external: true
+        name: allora-web-network
 
 volumes:
     allora_monitor_data:

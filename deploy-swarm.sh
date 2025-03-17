@@ -36,10 +36,18 @@ fi
 
 # 네트워크 생성 또는 확인
 if ! docker network ls | grep -q "allora-web-network"; then
-    echo "Docker 네트워크 생성 중..."
-    docker network create --driver overlay allora-web-network
+    echo "오버레이 네트워크 생성 중..."
+    docker network create --driver overlay --attachable allora-web-network
 else
-    echo "Docker 네트워크가 이미 생성되어 있습니다."
+    # 기존 네트워크가 오버레이 타입인지 확인
+    NETWORK_DRIVER=$(docker network inspect allora-web-network -f '{{.Driver}}')
+    if [ "$NETWORK_DRIVER" != "overlay" ]; then
+        echo "기존 네트워크를 제거하고 오버레이 네트워크로 다시 생성합니다..."
+        docker network rm allora-web-network || true
+        docker network create --driver overlay --attachable allora-web-network
+    else
+        echo "오버레이 네트워크가 이미 존재합니다."
+    fi
 fi
 
 # 데이터 볼륨이 존재하는지 확인하고 없으면 생성
@@ -52,9 +60,20 @@ fi
 echo "데이터 볼륨 권한 설정 중..."
 docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
 
+# docker-compose.yml 파일을 수정하여 스웜 모드에서 지원되지 않는 옵션 제거
+echo "Docker Compose 파일 준비 중..."
+cp docker-compose.yml docker-compose.swarm.yml
+
+# container_name 항목 제거
+sed -i '' -e 's/container_name:.*//g' docker-compose.swarm.yml 2>/dev/null || \
+sed -i 's/container_name:.*//g' docker-compose.swarm.yml
+
 # 스택 배포
 echo "스택 배포 중..."
-docker stack deploy -c docker-compose.yml allora-monitor
+docker stack deploy -c docker-compose.swarm.yml allora-monitor
+
+# 임시 파일 정리
+rm -f docker-compose.swarm.yml
 
 # 서비스가 모두 시작될 때까지 대기
 echo "서비스 배포 대기 중..."
