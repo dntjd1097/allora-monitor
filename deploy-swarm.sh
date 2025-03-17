@@ -60,13 +60,30 @@ fi
 echo "데이터 볼륨 권한 설정 중..."
 docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
 
+# 이미지 빌드
+echo "도커 이미지 빌드 중..."
+docker compose build
+
 # docker-compose.yml 파일을 수정하여 스웜 모드에서 지원되지 않는 옵션 제거
 echo "Docker Compose 파일 준비 중..."
 cp docker-compose.yml docker-compose.swarm.yml
 
-# container_name 항목 제거
+# container_name 항목과 build 항목 제거
 sed -i '' -e 's/container_name:.*//g' docker-compose.swarm.yml 2>/dev/null || \
 sed -i 's/container_name:.*//g' docker-compose.swarm.yml
+
+# build 섹션 제거 (macOS와 Linux 호환)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS용 sed 명령
+    sed -i '' -e '/build:/,/dockerfile:/d' docker-compose.swarm.yml
+else
+    # Linux용 sed 명령
+    sed -i '/build:/,/dockerfile:/d' docker-compose.swarm.yml
+fi
+
+# restart 항목 제거
+sed -i '' -e 's/restart:.*//g' docker-compose.swarm.yml 2>/dev/null || \
+sed -i 's/restart:.*//g' docker-compose.swarm.yml
 
 # 스택 배포
 echo "스택 배포 중..."

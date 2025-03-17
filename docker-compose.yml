@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
     backend:
+        image: allora-monitor-backend:latest # 이미지 이름 지정
         build:
             context: ./backend
             dockerfile: Dockerfile
@@ -22,6 +23,7 @@ services:
                 order: start-first
 
     frontend:
+        image: allora-monitor-frontend:latest # 이미지 이름 지정
         build:
             context: ./temp-next-app
             dockerfile: Dockerfile

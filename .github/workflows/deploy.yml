@@ -66,6 +66,11 @@ jobs:
                   sudo docker volume create allora_monitor_data || true
                   sudo docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
 
+            - name: Build Docker images
+              run: |
+                  echo "도커 이미지 빌드 중..."
+                  sudo docker compose build
+
             - name: Deploy with Docker Swarm
               run: |
                   sudo chmod +x deploy-swarm.sh
