@@ -16,7 +16,6 @@ services:
         build:
             context: ./temp-next-app
             dockerfile: Dockerfile
-        container_name: allora-monitor-frontend
         depends_on:
             - backend
         environment:
@@ -24,6 +23,12 @@ services:
         restart: unless-stopped
         networks:
             - allora-web-network
+        deploy:
+            replicas: 3
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
 
     nginx:
         image: nginx:alpine
