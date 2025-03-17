@@ -16,7 +16,7 @@ services:
         build:
             context: ./temp-next-app
             dockerfile: Dockerfile
-        container_name: allora-monitor-frontend
+        # container_name: allora-monitor-frontend  # 레플리카 사용시 고정 이름 사용 불가
         depends_on:
             - backend
         environment:
@@ -24,6 +24,15 @@ services:
         restart: unless-stopped
         networks:
             - allora-web-network
+        deploy:
+            mode: replicated
+            replicas: 3 # 원하는 레플리카 수
+            restart_policy:
+                condition: on-failure
+            update_config:
+                parallelism: 1
+                delay: 10s
+                order: start-first
 
     nginx:
         image: nginx:alpine

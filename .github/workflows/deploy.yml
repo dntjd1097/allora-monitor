@@ -26,9 +26,18 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
+            - name: Initialize Docker Swarm if not active
+              run: |
+                  if ! sudo docker info | grep -q "Swarm: active"; then
+                    echo "도커 스웜 모드 초기화 중..."
+                    sudo docker swarm init || true
+                  else
+                    echo "도커 스웜 모드가 이미 활성화되어 있습니다."
+                  fi
+
             - name: Create docker network if not exists
               run: |
-                  sudo docker network create allora-web-network || true
+                  sudo docker network create --driver overlay allora-web-network || true
                   sudo usermod -aG docker $USER || true
                   newgrp docker || true
 
@@ -39,20 +48,27 @@ jobs:
                   sudo mkdir -p $(pwd)/nginx/conf
                   sudo chmod -R 777 $(pwd)/nginx
 
-            - name: Build and deploy with Docker Compose
+            - name: Create and configure Docker volume
               run: |
+                  sudo docker volume create allora_monitor_data || true
+                  sudo docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
 
-                  sudo docker compose up -d --build
-                  sudo docker system prune -f
+            - name: Deploy with Docker Swarm
+              run: |
+                  sudo chmod +x deploy-swarm.sh
+                  sudo ./deploy-swarm.sh
 
-            - name: Check running containers
-              run: sudo docker ps
+            - name: Check deployed services
+              run: |
+                  echo "배포된 서비스 목록:"
+                  sudo docker service ls
+
+                  echo "프론트엔드 레플리카 상태:"
+                  sudo docker service ps allora-monitor_frontend --no-trunc
 
             - name: Show logs
               run: |
-                  echo "Backend logs:"
-                  sudo docker logs allora-monitor-backend --tail 20 || true
-                  echo "Frontend logs:"
-                  sudo docker logs allora-monitor-frontend --tail 20 || true
-                  echo "Nginx logs:"
-                  sudo docker logs allora-monitor-nginx --tail 20 || true
+                  echo "서비스 로그:"
+                  sudo docker service logs allora-monitor_frontend --tail 20 || true
+                  sudo docker service logs allora-monitor_backend --tail 20 || true
+                  sudo docker service logs allora-monitor_nginx --tail 20 || true
