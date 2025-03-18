@@ -2,37 +2,62 @@ version: '3.8'
 
 services:
     backend:
-        image: allora-monitor-backend:latest
+        image: allora-monitor-backend:latest # 이미지 이름 지정
         build:
             context: ./backend
             dockerfile: Dockerfile
+        # container_name: allora-monitor-backend  # 레플리카 사용시 고정 이름 사용 불가
         volumes:
             - allora_monitor_data:/app/data
         ports:
-            - '5001:8080'
-        restart: always
+            - '0.0.0.0:5001:8080' # 명시적으로 모든 인터페이스에 바인딩
+        restart: unless-stopped
         networks:
-            - allora-network
+            - allora-web-network
+        deploy:
+            mode: replicated
+            replicas: 2 # 원하는 레플리카 수
+            restart_policy:
+                condition: on-failure
+            update_config:
+                parallelism: 1
+                delay: 10s
+                order: start-first
+            # endpoint_mode: vip  # 기본값이므로 생략 가능
 
     frontend:
-        image: allora-monitor-frontend:latest
+        image: allora-monitor-frontend:latest # 이미지 이름 지정
         build:
             context: ./temp-next-app
             dockerfile: Dockerfile
+        # container_name: allora-monitor-frontend  # 레플리카 사용시 고정 이름 사용 불가
         depends_on:
             - backend
         ports:
-            - '5000:3000'
+            - '0.0.0.0:5000:3000' # 명시적으로 모든 인터페이스에 바인딩
         environment:
+            # 클라이언트는 /api로 접근, 서버는 내부에서 프록시
             - NEXT_PUBLIC_API_URL=/api
+            # Next.js 내부 프록시용 백엔드 주소
             - BACKEND_URL=http://backend:8080
-        restart: always
+        restart: unless-stopped
         networks:
-            - allora-network
+            - allora-web-network
+        deploy:
+            mode: replicated
+            replicas: 3 # 원하는 레플리카 수
+            restart_policy:
+                condition: on-failure
+            update_config:
+                parallelism: 1
+                delay: 10s
+                order: start-first
+            # endpoint_mode: vip  # 기본값이므로 생략 가능
 
 networks:
-    allora-network:
-        driver: bridge
+    allora-web-network:
+        external: true
+        name: allora-web-network
 
 volumes:
     allora_monitor_data:
