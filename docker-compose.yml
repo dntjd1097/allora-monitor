@@ -23,7 +23,7 @@ services:
                 parallelism: 1
                 delay: 10s
                 order: start-first
-            endpoint_mode: dnsrr # DNS 라운드 로빈 사용
+            # endpoint_mode: vip  # 기본값이므로 생략 가능
 
     frontend:
         image: allora-monitor-frontend:latest # 이미지 이름 지정
@@ -52,7 +52,7 @@ services:
                 parallelism: 1
                 delay: 10s
                 order: start-first
-            endpoint_mode: dnsrr # DNS 라운드 로빈 사용
+            # endpoint_mode: vip  # 기본값이므로 생략 가능
 
 networks:
     allora-web-network:
