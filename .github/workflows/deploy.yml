@@ -26,15 +26,17 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Docker network
+            - name: Cleanup previous network
               run: |
-                  if ! sudo docker network ls | grep -q "allora-web-network"; then
-                    echo "Docker 네트워크 생성 중..."
-                    sudo docker network create allora-web-network || true
-                  else
-                    echo "Docker 네트워크가 이미 존재합니다."
-                  fi
+                  # 기존 네트워크 제거 (사용 중이라면 무시)
+                  echo "기존 네트워크 정리 중..."
+                  sudo docker network rm allora-web-network || true
+                  # swarm 네트워크도 확인하고 제거 시도
+                  for net in $(sudo docker network ls --filter driver=overlay --format '{{.ID}}'); do
+                    sudo docker network rm $net || true
+                  done
 
+                  # 사용자 권한 설정
                   sudo usermod -aG docker $USER || true
 
             - name: Setting up directories
@@ -51,6 +53,8 @@ jobs:
               run: |
                   echo "기존 컨테이너 중지 중..."
                   sudo docker compose down || true
+                  # 혹시 남아있는 관련 컨테이너 정리
+                  sudo docker ps -a | grep "allora-monitor" | awk '{print $1}' | xargs -r sudo docker rm -f || true
 
             - name: Build and start containers
               run: |
@@ -62,6 +66,8 @@ jobs:
               run: |
                   echo "실행 중인 컨테이너 확인:"
                   sudo docker compose ps
+                  echo "네트워크 정보:"
+                  sudo docker network ls
 
             - name: Show logs
               run: |
