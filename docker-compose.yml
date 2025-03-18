@@ -9,6 +9,8 @@ services:
         # container_name: allora-monitor-backend  # 레플리카 사용시 고정 이름 사용 불가
         volumes:
             - allora_monitor_data:/app/data
+        ports:
+            - '5001:8080' # 호스트의 5001 포트를 컨테이너의 8080 포트에 매핑
         restart: unless-stopped
         networks:
             - allora-web-network
@@ -21,6 +23,7 @@ services:
                 parallelism: 1
                 delay: 10s
                 order: start-first
+            endpoint_mode: dnsrr # DNS 라운드 로빈 사용
 
     frontend:
         image: allora-monitor-frontend:latest # 이미지 이름 지정
@@ -30,8 +33,13 @@ services:
         # container_name: allora-monitor-frontend  # 레플리카 사용시 고정 이름 사용 불가
         depends_on:
             - backend
+        ports:
+            - '5000:3000' # 호스트의 5000 포트를 컨테이너의 3000 포트에 매핑
         environment:
+            # 클라이언트는 /api로 접근, 서버는 내부에서 프록시
             - NEXT_PUBLIC_API_URL=/api
+            # Next.js 내부 프록시용 백엔드 주소
+            - BACKEND_URL=http://backend:8080
         restart: unless-stopped
         networks:
             - allora-web-network
@@ -44,27 +52,7 @@ services:
                 parallelism: 1
                 delay: 10s
                 order: start-first
-
-    nginx:
-        image: nginx:alpine
-        # container_name: allora-monitor-nginx  # 레플리카 사용시 고정 이름 사용 불가
-        ports:
-            - '280:280'
-            - '2443:2443'
-        volumes:
-            - ./nginx/conf:/etc/nginx/conf.d
-        depends_on:
-            - frontend
-            - backend
-        restart: unless-stopped
-        networks:
-            - allora-web-network
-        deploy:
-            mode: replicated
-            replicas: 1 # 로드 밸런서는 하나만 실행
-            placement:
-                constraints:
-                    - node.role == manager # 매니저 노드에만 배포하여 포트 충돌 방지
+            endpoint_mode: dnsrr # DNS 라운드 로빈 사용
 
 networks:
     allora-web-network:

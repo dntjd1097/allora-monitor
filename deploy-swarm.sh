@@ -120,5 +120,9 @@ docker service ls | grep allora-monitor
 echo -e "\n프론트엔드 레플리카 확인:"
 docker service ps allora-monitor_frontend
 
+echo -e "\n백엔드 레플리카 확인:"
+docker service ps allora-monitor_backend
+
 echo -e "\n배포가 완료되었습니다."
-echo "애플리케이션은 http://localhost:280 또는 설정된 도메인으로 접근할 수 있습니다." 
+echo "프론트엔드는 http://localhost:5000으로 접근할 수 있습니다."
+echo "백엔드는 http://localhost:5001로 직접 접근할 수 있습니다." 

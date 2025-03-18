@@ -58,8 +58,6 @@ jobs:
               run: |
                   sudo mkdir -p $(pwd)/backend/data
                   sudo chmod 777 $(pwd)/backend/data
-                  sudo mkdir -p $(pwd)/nginx/conf
-                  sudo chmod -R 777 $(pwd)/nginx
 
             - name: Create and configure Docker volume
               run: |
@@ -84,9 +82,11 @@ jobs:
                   echo "프론트엔드 레플리카 상태:"
                   sudo docker service ps allora-monitor_frontend --no-trunc
 
+                  echo "백엔드 레플리카 상태:"
+                  sudo docker service ps allora-monitor_backend --no-trunc
+
             - name: Show logs
               run: |
                   echo "서비스 로그:"
                   sudo docker service logs allora-monitor_frontend --tail 20 || true
                   sudo docker service logs allora-monitor_backend --tail 20 || true
-                  sudo docker service logs allora-monitor_nginx --tail 20 || true

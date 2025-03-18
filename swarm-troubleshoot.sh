@@ -93,9 +93,6 @@ if docker service ls | grep -q "allora-monitor"; then
     
     echo -e "\n${BLUE}[백엔드 서비스 로그]${NC}"
     docker service logs allora-monitor_backend --tail 10 2>/dev/null || echo -e "${RED}[오류] 백엔드 서비스 로그를 가져올 수 없습니다.${NC}"
-    
-    echo -e "\n${BLUE}[Nginx 서비스 로그]${NC}"
-    docker service logs allora-monitor_nginx --tail 10 2>/dev/null || echo -e "${RED}[오류] Nginx 서비스 로그를 가져올 수 없습니다.${NC}"
 else
     echo -e "${YELLOW}[정보] 실행 중인 allora-monitor 서비스가 없습니다.${NC}"
 fi
@@ -107,6 +104,10 @@ echo -e "2. 스크립트로 배포:\n   ./deploy-swarm.sh"
 echo -e "3. 수동으로 배포:\n   docker stack deploy -c docker-compose.swarm.yml allora-monitor"
 echo -e "4. 서비스 상태 확인:\n   docker service ls"
 echo -e "5. 서비스 스케일 조정:\n   docker service scale allora-monitor_frontend=5"
+
+echo -e "\n${BLUE}===== 포트 접근 정보 =====${NC}"
+echo -e "프론트엔드: http://localhost:5000"
+echo -e "백엔드 API: http://localhost:5001"
 
 echo -e "\n${BLUE}===== 문제 해결 =====${NC}"
 echo -e "1. 스택 제거:\n   docker stack rm allora-monitor"
