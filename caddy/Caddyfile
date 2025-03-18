@@ -1,7 +1,0 @@
-
-allora-inference.kro.kr {
-    reverse_proxy frontend:3000
-}
-backend.allora-inference.kro.kr {
-    reverse_proxy backend:8080
-}
