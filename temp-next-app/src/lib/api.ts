@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 // Backend API base URL - get from environment variable or use default
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL ||
-    'https://backend.allora-inference.kro.kr';
+    'https://allora-inference.kro.kr/api/';
 
 // Create axios instance with default config
 const api = axios.create({
