@@ -44,6 +44,49 @@ This project uses Docker Compose to run the backend, frontend, and nginx service
     docker-compose down
     ```
 
+### 프론트엔드 레플리카 배포 (Docker Swarm 모드)
+
+트래픽이 많은 프로덕션 환경에서는 프론트엔드 서비스를 여러 개의 레플리카로 실행하여 로드 밸런싱을 구성할 수 있습니다. 이를 위해 Docker Swarm 모드를 사용합니다.
+
+1. Docker Swarm 모드로 배포:
+
+    ```bash
+    # 스크립트에 실행 권한 부여
+    chmod +x deploy-swarm.sh
+
+    # 배포 스크립트 실행
+    ./deploy-swarm.sh
+    ```
+
+2. 배포된 서비스 확인:
+
+    ```bash
+    # 모든 서비스 조회
+    docker service ls
+
+    # 프론트엔드 레플리카 상태 확인
+    docker service ps allora-monitor_frontend
+    ```
+
+3. 스케일링 (레플리카 수 조정):
+
+    ```bash
+    # 프론트엔드 서비스를 5개의 레플리카로 스케일
+    docker service scale allora-monitor_frontend=5
+    ```
+
+4. 서비스 스택 제거:
+
+    ```bash
+    docker stack rm allora-monitor
+    ```
+
+5. Docker Swarm 모드 종료:
+
+    ```bash
+    docker swarm leave --force
+    ```
+
 ### Data Persistence
 
 The application uses a named volume `allora_monitor_data` for database persistence. This volume is managed by Docker and persists even if the containers are removed.

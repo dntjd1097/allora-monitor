@@ -26,11 +26,33 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Create docker network if not exists
+            - name: Initialize Docker Swarm if not active
               run: |
-                  sudo docker network create allora-web-network || true
+                  if ! sudo docker info | grep -q "Swarm: active"; then
+                    echo "도커 스웜 모드 초기화 중..."
+                    sudo docker swarm init || true
+                  else
+                    echo "도커 스웜 모드가 이미 활성화되어 있습니다."
+                  fi
+
+            - name: Setup Docker overlay network
+              run: |
+                  if ! sudo docker network ls | grep -q "allora-web-network"; then
+                    echo "오버레이 네트워크 생성 중..."
+                    sudo docker network create --driver overlay --attachable allora-web-network || true
+                  else
+                    # 기존 네트워크가 오버레이 타입인지 확인
+                    NETWORK_DRIVER=$(sudo docker network inspect allora-web-network -f '{{.Driver}}')
+                    if [ "$NETWORK_DRIVER" != "overlay" ]; then
+                      echo "기존 네트워크를 제거하고 오버레이 네트워크로 다시 생성합니다..."
+                      sudo docker network rm allora-web-network || true
+                      sudo docker network create --driver overlay --attachable allora-web-network || true
+                    else
+                      echo "오버레이 네트워크가 이미 존재합니다."
+                    fi
+                  fi
+
                   sudo usermod -aG docker $USER || true
-                  newgrp docker || true
 
             - name: Setting up directories
               run: |
@@ -39,20 +61,32 @@ jobs:
                   sudo mkdir -p $(pwd)/nginx/conf
                   sudo chmod -R 777 $(pwd)/nginx
 
-            - name: Build and deploy with Docker Compose
+            - name: Create and configure Docker volume
               run: |
+                  sudo docker volume create allora_monitor_data || true
+                  sudo docker run --rm -v allora_monitor_data:/data alpine sh -c "chmod -R 777 /data"
 
-                  sudo docker compose up -d --build
-                  sudo docker system prune -f
+            - name: Build Docker images
+              run: |
+                  echo "도커 이미지 빌드 중..."
+                  sudo docker compose build
 
-            - name: Check running containers
-              run: sudo docker ps
+            - name: Deploy with Docker Swarm
+              run: |
+                  sudo chmod +x deploy-swarm.sh
+                  sudo ./deploy-swarm.sh
+
+            - name: Check deployed services
+              run: |
+                  echo "배포된 서비스 목록:"
+                  sudo docker service ls
+
+                  echo "프론트엔드 레플리카 상태:"
+                  sudo docker service ps allora-monitor_frontend --no-trunc
 
             - name: Show logs
               run: |
-                  echo "Backend logs:"
-                  sudo docker logs allora-monitor-backend --tail 20 || true
-                  echo "Frontend logs:"
-                  sudo docker logs allora-monitor-frontend --tail 20 || true
-                  echo "Nginx logs:"
-                  sudo docker logs allora-monitor-nginx --tail 20 || true
+                  echo "서비스 로그:"
+                  sudo docker service logs allora-monitor_frontend --tail 20 || true
+                  sudo docker service logs allora-monitor_backend --tail 20 || true
+                  sudo docker service logs allora-monitor_nginx --tail 20 || true
