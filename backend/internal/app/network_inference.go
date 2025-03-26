@@ -464,6 +464,45 @@ func (s *TopicInferenceStore) createSynthesisData(networkInference NetworkInfere
 	return synthesisValue
 }
 
+// getBlockTimestamp fetches the timestamp for a specific block height
+func (s *TopicInferenceStore) getBlockTimestamp(blockHeight string) (string, error) {
+	url := fmt.Sprintf("https://%s/cosmos/base/tendermint/v1beta1/blocks/%s", apiaddress, blockHeight)
+
+	if s.debug {
+		log.Printf("Block API 요청 URL: %s", url)
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("블록 API 요청 실패: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// 응답 상태 코드 확인
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("블록 API 응답 오류: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	// 응답 본문 디코딩
+	var blockResponse struct {
+		Block struct {
+			Header struct {
+				Time string `json:"time"`
+			} `json:"header"`
+		} `json:"block"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&blockResponse); err != nil {
+		return "", fmt.Errorf("블록 JSON 디코딩 실패: %w", err)
+	}
+
+	if blockResponse.Block.Header.Time == "" {
+		return "", fmt.Errorf("블록 타임스탬프 정보가 없습니다")
+	}
+
+	return blockResponse.Block.Header.Time, nil
+}
+
 // collectTopicData는 지정된 토픽의 추론 데이터를 수집합니다
 func (s *TopicInferenceStore) collectTopicData(topicID string) error {
 	if s.debug {
@@ -534,10 +573,26 @@ func (s *TopicInferenceStore) collectTopicData(topicID string) error {
 		// 먼저 필요한 데이터를 추출하여 synthesis_value 생성
 		synthesisValue := s.createSynthesisData(networkInference, topicID)
 
+		// 블록 타임스탬프 가져오기
+		blockTimestamp := ""
+		if networkInference.InferenceBlockHeight != "" {
+			timestamp, err := s.getBlockTimestamp(networkInference.InferenceBlockHeight)
+			if err != nil {
+				if s.debug {
+					log.Printf("블록 타임스탬프 조회 실패: %v, 현재 시간 사용", err)
+				}
+				blockTimestamp = time.Now().Format(time.RFC3339)
+			} else {
+				blockTimestamp = timestamp
+			}
+		} else {
+			blockTimestamp = time.Now().Format(time.RFC3339)
+		}
+
 		// 저장할 데이터 구성
 		storeData := map[string]interface{}{
 			"topic_id":  topicID,
-			"timestamp": time.Now().Format(time.RFC3339),
+			"timestamp": blockTimestamp,
 			"network_inferences": map[string]interface{}{
 				"reputer_request_nonce":             networkInference.NetworkInferences.ReputerRequestNonce,
 				"reputer":                           networkInference.NetworkInferences.Reputer,
