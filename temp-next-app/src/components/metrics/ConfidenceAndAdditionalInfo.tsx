@@ -4,12 +4,42 @@ import { formatDate } from '@/lib/utils';
 import { formatLargeNumber } from '@/lib/formatters';
 
 interface ConfidenceAndAdditionalInfoProps {
-    inferenceData: TopicInferenceData;
+    inferenceData: TopicInferenceData | null;
 }
 
 export const ConfidenceAndAdditionalInfo: React.FC<
     ConfidenceAndAdditionalInfoProps
 > = ({ inferenceData }) => {
+    if (!inferenceData || !inferenceData.data) {
+        return (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">
+                    No inference data available
+                </p>
+            </div>
+        );
+    }
+
+    const {
+        confidence_interval_raw_percentiles,
+        confidence_interval_values,
+        timestamp,
+    } = inferenceData.data;
+
+    if (
+        !confidence_interval_raw_percentiles ||
+        !confidence_interval_values
+    ) {
+        return (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">
+                    Confidence interval data is not
+                    available
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div>
@@ -34,7 +64,7 @@ export const ConfidenceAndAdditionalInfo: React.FC<
                             </tr>
                         </thead>
                         <tbody>
-                            {inferenceData.data.confidence_interval_raw_percentiles.map(
+                            {confidence_interval_raw_percentiles.map(
                                 (percentile, index) => (
                                     <tr
                                         key={percentile}
@@ -52,9 +82,7 @@ export const ConfidenceAndAdditionalInfo: React.FC<
                                         </td>
                                         <td className="border border-gray-300 p-2 font-mono">
                                             {formatLargeNumber(
-                                                inferenceData
-                                                    .data
-                                                    .confidence_interval_values[
+                                                confidence_interval_values[
                                                     index
                                                 ]
                                             )}
@@ -84,15 +112,14 @@ export const ConfidenceAndAdditionalInfo: React.FC<
                             </h3>
                             <p className="text-sm bg-gray-50 p-3 rounded font-mono">
                                 {formatDate(
-                                    inferenceData.data
-                                        .timestamp,
+                                    timestamp,
                                     'PPpp'
                                 )}
                             </p>
                             <p className="text-xs text-[var(--muted-foreground)] mt-1">
                                 (UTC:{' '}
                                 {new Date(
-                                    inferenceData.data.timestamp
+                                    timestamp
                                 ).toISOString()}
                                 )
                             </p>
