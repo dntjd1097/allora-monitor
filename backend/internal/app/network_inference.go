@@ -13,7 +13,7 @@ import (
 const (
 	rpcaddress = "allora-rpc.testnet.allora.network"
 	apiaddress = "allora-api.testnet.allora.network"
-	version    = "v10"
+	version    = "v9"
 )
 
 // NetworkInference는 Allora 네트워크의 추론 데이터 구조체입니다
