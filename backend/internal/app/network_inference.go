@@ -533,6 +533,67 @@ func (s *TopicInferenceStore) collectTopicData(topicID string) error {
 		return fmt.Errorf("JSON 디코딩 실패: %w", err)
 	}
 
+	// 각 인퍼러에 대한 weight 값을 고루틴을 사용하여 병렬로 가져오기
+	var wg sync.WaitGroup
+	var mu sync.Mutex // 결과 슬라이스 보호를 위한 뮤텍스
+	infererWeights := make([]InfererWeight, 0, len(networkInference.NetworkInferences.InfererValues))
+
+	// 동시 요청 수 제한을 위한 세마포어 (최대 10개 고루틴 동시 실행)
+	semaphore := make(chan struct{}, 10)
+
+	for _, iv := range networkInference.NetworkInferences.InfererValues {
+		if iv.Worker == "" {
+			continue
+		}
+
+		wg.Add(1)
+		go func(worker string) {
+			defer wg.Done()
+
+			// 세마포어 획득
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
+			// 개별 인퍼러 weight API 호출
+			weightURL := fmt.Sprintf("https://%s/emissions/%s/latest_inferer_weight/%s/%s",
+				apiaddress, version, topicID, worker)
+
+			if s.debug {
+				log.Printf("인퍼러 weight API 요청: %s", weightURL)
+			}
+
+			weightResp, err := http.Get(weightURL)
+			if err != nil {
+				log.Printf("인퍼러 weight API 요청 실패 (worker=%s): %v", worker, err)
+				return
+			}
+			defer weightResp.Body.Close()
+
+			var weightData struct {
+				Weight string `json:"weight"`
+			}
+
+			if err := json.NewDecoder(weightResp.Body).Decode(&weightData); err != nil {
+				log.Printf("인퍼러 weight JSON 디코딩 실패 (worker=%s): %v", worker, err)
+				return
+			}
+
+			// 결과 추가 (뮤텍스로 보호)
+			mu.Lock()
+			infererWeights = append(infererWeights, InfererWeight{
+				Worker: worker,
+				Weight: weightData.Weight,
+			})
+			mu.Unlock()
+		}(iv.Worker)
+	}
+
+	// 모든 고루틴이 완료될 때까지 대기
+	wg.Wait()
+
+	// 가져온 weight 데이터로 업데이트
+	networkInference.InfererWeights = infererWeights
+
 	// 기존 데이터와 비교하여 변경 여부 확인
 	s.mu.Lock()
 	defer s.mu.Unlock()
